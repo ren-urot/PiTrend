@@ -51,7 +51,16 @@ insert into public.cities (name, slug) values
   ('Cebu City', 'cebu-city'),
   ('Mandaue City', 'mandaue-city'),
   ('Lapu-Lapu City', 'lapu-lapu-city'),
+  ('Cordova', 'cordova'),
+  ('Consolacion', 'consolacion'),
+  ('Liloan', 'liloan'),
+  ('Compostela', 'compostela'),
+  ('Danao City', 'danao-city'),
   ('Talisay', 'talisay'),
+  ('Minglanilla', 'minglanilla'),
+  ('Naga City', 'naga-city'),
+  ('San Fernando', 'san-fernando'),
+  ('Carcar City', 'carcar-city'),
   ('Manila', 'manila'),
   ('Davao', 'davao'),
   ('Iloilo', 'iloilo'),
@@ -72,7 +81,7 @@ In the same SQL Editor, run:
 select count(*) from public.cities;
 ```
 
-Expected: `10`.
+Expected: `19`.
 
 - [ ] **Step 4: Commit**
 

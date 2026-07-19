@@ -57,9 +57,11 @@ is non-sensitive reference data (a lookup list), consistent with how the
 PRD's own city list is public information, so there's no reason to restrict
 reads.
 
-Seeded rows (from the PRD's initial city list): Cebu City, Mandaue City,
-Lapu-Lapu City, Talisay, Manila, Davao, Iloilo, Bacolod, Baguio, General
-Santos.
+Seeded rows: the PRD's initial city list (Manila, Davao, Iloilo, Bacolod,
+Baguio, General Santos) plus an expanded Cebu-area corridor requested during
+planning — Cebu City, Mandaue City, Lapu-Lapu City, Cordova, Consolacion,
+Liloan, Compostela, Danao City (north boundary), Talisay, Minglanilla, Naga
+City, San Fernando, Carcar City (south boundary) — 19 rows total.
 
 `profiles` (from Foundation) gains two columns:
 
