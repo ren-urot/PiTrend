@@ -45,8 +45,10 @@ npm install
 
 - [ ] **Step 3: Add Tailwind CSS**
 
+Pin to Tailwind v3 — this plan's config files (`tailwind.config.ts`, `postcss.config.js`, `@tailwind` directives) use v3's JS-config model, which v4 does not use the same way:
+
 ```bash
-npm install -D tailwindcss postcss autoprefixer
+npm install -D tailwindcss@^3 postcss autoprefixer
 npx tailwindcss init -p
 ```
 
