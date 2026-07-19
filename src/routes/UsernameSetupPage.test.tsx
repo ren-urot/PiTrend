@@ -1,9 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UsernameSetupPage } from './UsernameSetupPage';
+
+// jsdom doesn't implement the Pointer Events APIs that Radix UI's Select
+// relies on for its interactions; polyfill them so userEvent clicks work.
+beforeAll(() => {
+  window.HTMLElement.prototype.hasPointerCapture ??= () => false;
+  window.HTMLElement.prototype.releasePointerCapture ??= () => {};
+  window.HTMLElement.prototype.scrollIntoView ??= () => {};
+});
 
 const mockInsert = vi.fn().mockResolvedValue({ error: null });
 
@@ -13,6 +21,13 @@ vi.mock('../hooks/useAuth', () => ({
     loading: false,
     signInWithEmail: vi.fn(),
     signOut: vi.fn(),
+  }),
+}));
+
+vi.mock('../hooks/useCities', () => ({
+  useCities: () => ({
+    data: [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' }],
+    isLoading: false,
   }),
 }));
 
@@ -34,11 +49,22 @@ function renderPage() {
 }
 
 describe('UsernameSetupPage', () => {
-  it('submits the chosen username and display name', async () => {
+  it('requires a city to be selected before the form can submit', async () => {
     renderPage();
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText('username'), 'renz');
+
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
+
+  it('submits the chosen username, display name, and city', async () => {
+    renderPage();
+
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText('username'), 'renz');
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Cebu City' }));
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await waitFor(() =>
@@ -46,6 +72,7 @@ describe('UsernameSetupPage', () => {
         id: 'user-1',
         username: 'renz',
         display_name: 'renz',
+        city_id: 'city-1',
       })
     );
   });
@@ -56,6 +83,8 @@ describe('UsernameSetupPage', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText('username'), 'renz');
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Cebu City' }));
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await waitFor(() =>

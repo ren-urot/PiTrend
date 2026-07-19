@@ -3,21 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useCities } from '../hooks/useCities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function UsernameSetupPage() {
   const { session } = useAuth();
+  const { data: cities } = useCities();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [cityId, setCityId] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!session) return;
+    if (!session || !cityId) return;
     setSubmitting(true);
     setError('');
 
@@ -25,6 +35,7 @@ export function UsernameSetupPage() {
       id: session.user.id,
       username,
       display_name: displayName || username,
+      city_id: cityId,
     });
 
     setSubmitting(false);
@@ -57,7 +68,19 @@ export function UsernameSetupPage() {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
         />
-        <Button type="submit" disabled={submitting}>
+        <Select value={cityId} onValueChange={setCityId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select your city" />
+          </SelectTrigger>
+          <SelectContent>
+            {cities?.map((city) => (
+              <SelectItem key={city.id} value={city.id}>
+                {city.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button type="submit" disabled={submitting || !cityId}>
           {submitting ? 'Saving…' : 'Continue'}
         </Button>
         {error && <p className="text-sm text-destructive">{error}</p>}
