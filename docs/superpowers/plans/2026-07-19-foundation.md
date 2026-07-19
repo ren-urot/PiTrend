@@ -6,7 +6,7 @@
 
 **Architecture:** Vite + React + TypeScript SPA styled with Tailwind CSS and shadcn/ui, backed by an existing Supabase project (Postgres + Auth). React Router drives navigation with two guard layouts (session-only, fully-protected). TanStack Query wraps all Supabase reads, its cache persisted to IndexedDB via Dexie so the last-known data renders instantly offline. `vite-plugin-pwa` (Workbox) handles the installable manifest and app-shell precaching. Deployed to Vercel.
 
-**Tech Stack:** Vite, React 18, TypeScript, Tailwind CSS, shadcn/ui, React Router v6, @tanstack/react-query, @tanstack/react-query-persist-client, Dexie.js, @supabase/supabase-js, qrcode.react, vite-plugin-pwa, Vitest, @testing-library/react.
+**Tech Stack:** Vite 8, React 19, TypeScript ~6.0, Tailwind CSS v3 (pinned — see Task 1), shadcn/ui, React Router v7, @tanstack/react-query, @tanstack/react-query-persist-client, Dexie.js, @supabase/supabase-js, qrcode.react, vite-plugin-pwa, Vitest, @testing-library/react. (Landed on newer majors than originally planned via unpinned `@latest` installs during implementation — verified compatible via full test suite + build; only stable, unchanged APIs are used.)
 
 ## Global Constraints
 
