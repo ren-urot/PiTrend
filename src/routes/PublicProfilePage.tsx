@@ -11,7 +11,7 @@ export function PublicProfilePage() {
     queryFn: async (): Promise<Profile | null> => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, created_at')
+        .select('id, username, display_name, avatar_url, city_id, reputation_score, created_at')
         .eq('username', username)
         .maybeSingle();
       if (error) throw error;
