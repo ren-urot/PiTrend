@@ -1,0 +1,37 @@
+import { Navigate, type RouteObject } from 'react-router-dom';
+import { LoginPage } from './LoginPage';
+import { UsernameSetupPage } from './UsernameSetupPage';
+import { ProtectedLayout } from './ProtectedLayout';
+import { SessionOnlyLayout } from './SessionOnlyLayout';
+import { AppShell } from '../components/nav/AppShell';
+import { FeedPage } from './FeedPage';
+import { MessagesPage } from './MessagesPage';
+import { MarketplacePage } from './MarketplacePage';
+import { NewsPage } from './NewsPage';
+import { ProfilePage } from './ProfilePage';
+import { PublicProfilePage } from './PublicProfilePage';
+
+export const routes: RouteObject[] = [
+  { path: '/login', element: <LoginPage /> },
+  {
+    element: <SessionOnlyLayout />,
+    children: [{ path: '/username-setup', element: <UsernameSetupPage /> }],
+  },
+  {
+    element: <ProtectedLayout />,
+    children: [
+      {
+        element: <AppShell />,
+        children: [
+          { index: true, element: <Navigate to="/feed" replace /> },
+          { path: '/feed', element: <FeedPage /> },
+          { path: '/messages', element: <MessagesPage /> },
+          { path: '/marketplace', element: <MarketplacePage /> },
+          { path: '/news', element: <NewsPage /> },
+          { path: '/profile', element: <ProfilePage /> },
+          { path: '/u/:username', element: <PublicProfilePage /> },
+        ],
+      },
+    ],
+  },
+];
