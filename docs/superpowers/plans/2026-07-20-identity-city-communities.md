@@ -729,7 +729,7 @@ git commit -m "feat: make Feed placeholder city-aware"
 
 **Interfaces:**
 - Consumes: `useCities()` from Task 3; `Select`/`SelectTrigger`/`SelectValue`/`SelectContent`/`SelectItem` from Task 4; `supabase` from `src/lib/supabase.ts`.
-- Produces: the profile page shows the user's current city name and a switcher that updates `profiles.city_id` and invalidates `['profile', userId]`.
+- Produces: the profile page shows the user's current city name and a switcher that updates `profiles.city_id` and invalidates `['profile', userId]`. The current city name is shown via the `Select`'s own `SelectValue` (which renders the selected item's label from the controlled `value` without opening the dropdown) — there is no separate `<p>` for it; an earlier draft of this task's code had a redundant standalone `<p>{currentCity.name}</p>` alongside the `Select`, which double-rendered the city name and broke a `getByText` query in testing. Don't reintroduce it.
 
 - [ ] **Step 1: Extend the failing test first**
 
@@ -892,7 +892,6 @@ export function ProfilePage() {
   }
 
   const profileUrl = `${window.location.origin}/u/${profile.username}`;
-  const currentCity = cities?.find((city) => city.id === profile.city_id);
 
   async function handleCityChange(newCityId: string) {
     if (!session) return;
@@ -920,7 +919,6 @@ export function ProfilePage() {
         <p className="text-muted-foreground">@{profile.username}</p>
       </div>
       <div className="flex w-full max-w-sm flex-col items-center gap-2">
-        {currentCity && <p className="text-sm text-muted-foreground">{currentCity.name}</p>}
         <Select value={profile.city_id} onValueChange={handleCityChange} disabled={updatingCity}>
           <SelectTrigger>
             <SelectValue placeholder="Change city" />
