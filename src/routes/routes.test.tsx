@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -49,14 +49,6 @@ vi.mock('../lib/supabase', () => ({
     },
   },
 }));
-
-// jsdom doesn't implement the Pointer Events APIs that Radix UI's Select
-// relies on for its interactions; polyfill them so userEvent clicks work.
-beforeAll(() => {
-  window.HTMLElement.prototype.hasPointerCapture ??= () => false;
-  window.HTMLElement.prototype.releasePointerCapture ??= () => {};
-  window.HTMLElement.prototype.scrollIntoView ??= () => {};
-});
 
 function renderApp() {
   const queryClient = new QueryClient();
