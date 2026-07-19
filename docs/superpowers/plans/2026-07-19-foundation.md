@@ -251,7 +251,150 @@ git commit -m "chore: add Vitest infrastructure and @/ path alias"
 npx shadcn@latest add button input dialog avatar tabs -y
 ```
 
-If prompted interactively despite `-y`, accept the default answer for each prompt.
+If prompted interactively despite `-y`, accept the default answer for each prompt. If the resolved `class-variance-authority` / `lucide-react` dependencies aren't installed automatically by the CLI, install them directly: `npm install class-variance-authority lucide-react`. If the `@/` alias isn't picked up because the CLI doesn't follow this project's split `tsconfig.app.json`/`tsconfig.node.json` project references, add `baseUrl`/`paths` directly to the root `tsconfig.json` per shadcn's Vite setup docs.
+
+- [ ] **Step 2b: Add the shadcn theme CSS variables (current CLI versions don't inject these for Tailwind v3 via `add`)**
+
+As of the CLI version available when this plan was written, `shadcn add` generates component files but does not inject the CSS variable theme tokens (`bg-primary`, `bg-background`, `border-input`, etc.) into `tailwind.config.ts` / `src/index.css` for Tailwind v3 projects — that only happens through `init`, which targets a v4-oriented preset this project isn't using. Without this step the components build but render unstyled. Add the standard shadcn "zinc" base-color theme manually.
+
+Replace `src/index.css` with:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+```
+
+Replace `tailwind.config.ts` with:
+
+```ts
+import type { Config } from 'tailwindcss';
+
+export default {
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  theme: {
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
+      },
+    },
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+} satisfies Config;
+```
+
+Install the animation plugin the generated `dialog.tsx` depends on: `npm install -D tailwindcss-animate`.
+
+Verify the tokens are actually emitted (a successful build alone doesn't prove this, since Tailwind silently omits unmatched utility classes rather than erroring):
+
+```bash
+npm run build
+grep -c -- "--background" dist/assets/*.css
+grep -c "\.bg-primary" dist/assets/*.css
+```
+
+Both counts must be greater than 0.
 
 - [ ] **Step 3: Verify the build still succeeds**
 
