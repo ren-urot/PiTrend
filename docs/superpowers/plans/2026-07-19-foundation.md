@@ -455,19 +455,34 @@ Expected: prints a match (Vite's default `.gitignore` already includes `*.local`
 
 - [ ] **Step 5: Write the failing test**
 
-Create `src/lib/supabase.test.ts`:
+In this project's Vite/Vitest version, `import.meta.env` in `test` mode still picks up `.env.local` — the classic "`.env.local` is skipped in test mode" behavior does not hold here, so the test needs to actively clear the vars rather than relying on them being absent by default. Create `src/lib/supabase.test.ts`:
 
 ```ts
 import { describe, it, expect } from 'vitest';
 
 describe('supabase client', () => {
   it('throws when required env vars are missing', async () => {
-    await expect(import('./supabase')).rejects.toThrow(
-      'Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables'
-    );
+    const originalUrl = import.meta.env.VITE_SUPABASE_URL;
+    const originalKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    try {
+      delete (import.meta.env as Record<string, string | undefined>).VITE_SUPABASE_URL;
+      delete (import.meta.env as Record<string, string | undefined>).VITE_SUPABASE_ANON_KEY;
+
+      vi.resetModules();
+
+      await expect(import('./supabase')).rejects.toThrow(
+        'Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables'
+      );
+    } finally {
+      if (originalUrl !== undefined) (import.meta.env as Record<string, string | undefined>).VITE_SUPABASE_URL = originalUrl;
+      if (originalKey !== undefined) (import.meta.env as Record<string, string | undefined>).VITE_SUPABASE_ANON_KEY = originalKey;
+    }
   });
 });
 ```
+
+This needs `vi` imported alongside the other test utilities: `import { describe, it, expect, vi } from 'vitest';`.
 
 - [ ] **Step 6: Run it to verify it fails**
 
@@ -496,7 +511,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 - [ ] **Step 8: Run the test to verify it passes**
 
 Run: `npm test -- src/lib/supabase.test.ts`
-Expected: PASS. (Vitest runs in `test` mode, where Vite does not load `.env.local`, so the env vars are genuinely absent during this test — the throw is real, not mocked.)
+Expected: PASS. The `delete` + `vi.resetModules()` force the module to re-evaluate with the vars genuinely absent, so the throw is real, not mocked.
 
 - [ ] **Step 9: Commit**
 
