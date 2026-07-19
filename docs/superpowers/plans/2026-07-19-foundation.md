@@ -233,7 +233,7 @@ git commit -m "chore: add Vitest infrastructure and @/ path alias"
   "tailwind": {
     "config": "tailwind.config.ts",
     "css": "src/index.css",
-    "baseColor": "violet",
+    "baseColor": "zinc",
     "cssVariables": true,
     "prefix": ""
   },
