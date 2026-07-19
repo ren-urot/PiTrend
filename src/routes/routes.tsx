@@ -13,6 +13,7 @@ import { PublicProfilePage } from './PublicProfilePage';
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/u/:username', element: <PublicProfilePage /> },
   {
     element: <SessionOnlyLayout />,
     children: [{ path: '/username-setup', element: <UsernameSetupPage /> }],
@@ -29,7 +30,6 @@ export const routes: RouteObject[] = [
           { path: '/marketplace', element: <MarketplacePage /> },
           { path: '/news', element: <NewsPage /> },
           { path: '/profile', element: <ProfilePage /> },
-          { path: '/u/:username', element: <PublicProfilePage /> },
         ],
       },
     ],
