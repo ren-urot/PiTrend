@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -12,8 +12,12 @@ let currentProfile: {
   username: string;
   display_name: string;
   avatar_url: null;
+  city_id: string;
+  reputation_score: number;
   created_at: string;
 } | null = null;
+
+const mockCities = [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' }];
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -23,19 +27,36 @@ vi.mock('../lib/supabase', () => ({
       signInWithOtp: vi.fn().mockResolvedValue({ error: null }),
       signOut: vi.fn(),
     },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: currentProfile, error: null }),
+    from: (table: string) => {
+      if (table === 'cities') {
+        return {
+          select: () => ({
+            order: () => Promise.resolve({ data: mockCities, error: null }),
+          }),
+        };
+      }
+      return {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () => Promise.resolve({ data: currentProfile, error: null }),
+          }),
         }),
-      }),
-      insert: (row: { id: string; username: string; display_name: string }) => {
-        currentProfile = { ...row, avatar_url: null, created_at: '2026-01-01' };
-        return Promise.resolve({ error: null });
-      },
-    }),
+        insert: (row: { id: string; username: string; display_name: string; city_id: string }) => {
+          currentProfile = { ...row, avatar_url: null, reputation_score: 0, created_at: '2026-01-01' };
+          return Promise.resolve({ error: null });
+        },
+      };
+    },
   },
 }));
+
+// jsdom doesn't implement the Pointer Events APIs that Radix UI's Select
+// relies on for its interactions; polyfill them so userEvent clicks work.
+beforeAll(() => {
+  window.HTMLElement.prototype.hasPointerCapture ??= () => false;
+  window.HTMLElement.prototype.releasePointerCapture ??= () => {};
+  window.HTMLElement.prototype.scrollIntoView ??= () => {};
+});
 
 function renderApp() {
   const queryClient = new QueryClient();
@@ -69,6 +90,8 @@ describe('app routing', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText('username'), 'renz');
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Cebu City' }));
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await waitFor(() => expect(screen.getByText('Feed — coming soon.')).toBeInTheDocument());
