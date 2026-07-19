@@ -21,6 +21,7 @@ export function ProfilePage() {
   const isOnline = useOnlineStatus();
   const queryClient = useQueryClient();
   const [updatingCity, setUpdatingCity] = useState(false);
+  const [cityError, setCityError] = useState('');
 
   if (authLoading || profileLoading) {
     return <div className="p-6">Loading profile…</div>;
@@ -42,7 +43,19 @@ export function ProfilePage() {
   async function handleCityChange(newCityId: string) {
     if (!session) return;
     setUpdatingCity(true);
-    await supabase.from('profiles').update({ city_id: newCityId }).eq('id', session.user.id);
+    setCityError('');
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ city_id: newCityId })
+      .eq('id', session.user.id);
+
+    if (error) {
+      setCityError("Couldn't update your city. Please try again.");
+      setUpdatingCity(false);
+      return;
+    }
+
     await queryClient.invalidateQueries({ queryKey: ['profile', session.user.id] });
     setUpdatingCity(false);
   }
@@ -77,6 +90,7 @@ export function ProfilePage() {
             ))}
           </SelectContent>
         </Select>
+        {cityError && <p className="text-sm text-destructive">{cityError}</p>}
       </div>
       <QRCodeSVG value={profileUrl} size={160} />
     </div>

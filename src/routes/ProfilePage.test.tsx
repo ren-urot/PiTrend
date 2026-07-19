@@ -101,4 +101,19 @@ describe('ProfilePage', () => {
     );
     expect(mockEq).toHaveBeenCalledWith('id', 'user-1');
   });
+
+  it('shows an error message and leaves the city unchanged when the update fails', async () => {
+    mockEq.mockResolvedValueOnce({ error: { message: 'network error' } });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Cebu City')).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Manila' }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Couldn't update your city. Please try again.")).toBeInTheDocument()
+    );
+    expect(screen.getByText('Cebu City')).toBeInTheDocument();
+  });
 });
