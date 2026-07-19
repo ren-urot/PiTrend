@@ -86,6 +86,6 @@ describe('app routing', () => {
     await user.click(screen.getByRole('option', { name: 'Cebu City' }));
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-    await waitFor(() => expect(screen.getByText('Feed — coming soon.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Cebu City Feed — coming soon.')).toBeInTheDocument());
   });
 });
