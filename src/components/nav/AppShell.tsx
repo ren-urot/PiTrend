@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { Newspaper, MessageCircle, Store, Rss, User, Hash } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
+import { useUnreadCount } from '../../hooks/useUnreadCount';
 
 const tabs = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -11,7 +13,7 @@ const tabs = [
   { to: '/profile', label: 'Profile', icon: User },
 ];
 
-function NavItems({ orientation }: { orientation: 'horizontal' | 'vertical' }) {
+function NavItems({ orientation, unreadCount }: { orientation: 'horizontal' | 'vertical'; unreadCount: number }) {
   return (
     <nav
       className={
@@ -30,7 +32,14 @@ function NavItems({ orientation }: { orientation: 'horizontal' | 'vertical' }) {
             } ${orientation === 'horizontal' ? 'flex-col text-xs' : ''}`
           }
         >
-          <Icon size={20} />
+          <span className="relative">
+            <Icon size={20} />
+            {to === '/messages' && unreadCount > 0 && (
+              <span className="absolute -right-2 -top-1 rounded-full bg-destructive px-1 text-[10px] leading-tight text-destructive-foreground">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </span>
           {label}
         </NavLink>
       ))}
@@ -40,17 +49,20 @@ function NavItems({ orientation }: { orientation: 'horizontal' | 'vertical' }) {
 
 export function AppShell() {
   useOfflineSync();
+  const { session } = useAuth();
+  const { data: unreadCount } = useUnreadCount(session?.user.id);
+
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
         <div className="p-4 text-xl font-bold">PiMesh</div>
-        <NavItems orientation="vertical" />
+        <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
       <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
         <Outlet />
       </main>
       <div className="fixed bottom-0 left-0 right-0 md:hidden">
-        <NavItems orientation="horizontal" />
+        <NavItems orientation="horizontal" unreadCount={unreadCount ?? 0} />
       </div>
     </div>
   );
