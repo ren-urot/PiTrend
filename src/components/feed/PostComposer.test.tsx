@@ -37,6 +37,11 @@ function renderComposer(channelId?: string | null) {
   );
 }
 
+async function selectMoreType(user: ReturnType<typeof userEvent.setup>, label: string) {
+  await user.click(screen.getByRole('button', { name: 'More post types' }));
+  await user.click(await screen.findByRole('menuitem', { name: label }));
+}
+
 describe('PostComposer', () => {
   beforeEach(() => {
     mockQueueDraftPost.mockReset().mockResolvedValue('draft-1');
@@ -85,8 +90,7 @@ describe('PostComposer', () => {
     expect(screen.queryByLabelText('Photo')).not.toBeInTheDocument();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Photo' }));
+    await user.click(screen.getByRole('button', { name: 'Photo post' }));
 
     expect(screen.getByLabelText('Photo')).toBeInTheDocument();
   });
@@ -95,8 +99,7 @@ describe('PostComposer', () => {
     renderComposer();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Photo' }));
+    await user.click(screen.getByRole('button', { name: 'Photo post' }));
 
     const file = new File(['fake-image-bytes'], 'photo.jpg', { type: 'image/jpeg' });
     await user.upload(screen.getByLabelText('Photo'), file);
@@ -116,8 +119,7 @@ describe('PostComposer', () => {
     renderComposer();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Poll' }));
+    await selectMoreType(user, 'Poll');
 
     const optionInputs = screen.getAllByPlaceholderText('Option');
     await user.type(optionInputs[0], 'CnT');
@@ -138,8 +140,7 @@ describe('PostComposer', () => {
     renderComposer();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Buy & Sell' }));
+    await selectMoreType(user, 'Buy & Sell');
 
     await user.type(screen.getByPlaceholderText('Price'), '3500');
     await user.type(screen.getByPlaceholderText('Category'), 'Vehicles');
@@ -160,8 +161,7 @@ describe('PostComposer', () => {
     renderComposer();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Video' }));
+    await user.click(screen.getByRole('button', { name: 'Video post' }));
 
     const file = new File(['fake-video-bytes'], 'clip.mp4', { type: 'video/mp4' });
     await user.upload(screen.getByLabelText('Video'), file);

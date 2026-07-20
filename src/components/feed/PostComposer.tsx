@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Type, Image, Video, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { queueDraftPost, processQueue } from '../../lib/offlineQueue';
@@ -12,12 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import type { PostType } from '../../types/post';
 
-const POST_TYPES: { value: PostType; label: string }[] = [
-  { value: 'text', label: 'Text' },
-  { value: 'photo', label: 'Photo' },
-  { value: 'video', label: 'Video' },
+const QUICK_POST_TYPES: { value: PostType; label: string; icon: typeof Type }[] = [
+  { value: 'text', label: 'Text', icon: Type },
+  { value: 'photo', label: 'Photo', icon: Image },
+  { value: 'video', label: 'Video', icon: Video },
+];
+
+const MORE_POST_TYPES: { value: PostType; label: string }[] = [
   { value: 'poll', label: 'Poll' },
   { value: 'question', label: 'Question' },
   { value: 'buy_sell', label: 'Buy & Sell' },
@@ -49,6 +59,9 @@ export function PostComposer({
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const isMoreTypeSelected = MORE_POST_TYPES.some((type) => type.value === postType);
+  const selectedMoreLabel = MORE_POST_TYPES.find((type) => type.value === postType)?.label;
 
   function updatePollOption(index: number, value: string) {
     setPollOptions((options) => options.map((option, i) => (i === index ? value : option)));
@@ -110,19 +123,43 @@ export function PostComposer({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-2 rounded-lg border p-4">
-      <Select value={postType} onValueChange={(value) => setPostType(value as PostType)}>
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {POST_TYPES.map((type) => (
-            <SelectItem key={type.value} value={type.value}>
-              {type.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-2 rounded-lg border bg-card p-4">
+      <div className="flex items-center gap-2">
+        {QUICK_POST_TYPES.map(({ value, label, icon: Icon }) => (
+          <Button
+            key={value}
+            type="button"
+            variant={postType === value ? 'default' : 'outline'}
+            size="icon"
+            aria-label={`${label} post`}
+            onClick={() => setPostType(value)}
+          >
+            <Icon size={18} />
+          </Button>
+        ))}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant={isMoreTypeSelected ? 'default' : 'outline'}
+              size="icon"
+              aria-label="More post types"
+            >
+              <MoreHorizontal size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {MORE_POST_TYPES.map((type) => (
+              <DropdownMenuItem key={type.value} onSelect={() => setPostType(type.value)}>
+                {type.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {isMoreTypeSelected && (
+          <span className="text-sm font-medium text-muted-foreground">{selectedMoreLabel}</span>
+        )}
+      </div>
       <Input
         placeholder="What's happening?"
         value={body}
@@ -188,7 +225,7 @@ export function PostComposer({
           />
         </div>
       )}
-      <Button type="submit" disabled={submitting}>
+      <Button type="submit" disabled={submitting} className="rounded-full">
         {submitting ? 'Saving…' : 'Post'}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
