@@ -25,7 +25,7 @@ export function ChannelsPage() {
         {visibleChannels?.map((channel) => {
           const isSubscribed = subscribedIds?.includes(channel.id) ?? false;
           return (
-            <div key={channel.id} className="flex items-center justify-between rounded-lg border p-3">
+            <div key={channel.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
               <div>
                 <Link to={`/channels/${channel.slug}`} className="font-medium hover:underline">
                   {channel.name}

@@ -17,7 +17,7 @@ export function PostCard({ post }: { post: Post }) {
   const viewerId = session?.user.id;
 
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-lg border bg-card p-4">
       <div className="mb-2 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm">
           {post.author.display_name.charAt(0).toUpperCase()}
