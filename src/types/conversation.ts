@@ -9,6 +9,7 @@ export interface ConversationSummary {
   is_group: boolean;
   name: string | null;
   created_at: string;
+  /** Excludes the current/viewing user — only the other people in the conversation. */
   participants: ConversationParticipantProfile[];
   lastMessagePreview: string | null;
   lastMessageAt: string | null;
@@ -21,6 +22,7 @@ export interface ConversationDetail {
   is_group: boolean;
   name: string | null;
   created_at: string;
+  /** Excludes the current/viewing user — only the other people in the conversation. */
   participants: ConversationParticipantProfile[];
 }
 
