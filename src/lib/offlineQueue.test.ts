@@ -101,6 +101,22 @@ describe('offlineQueue', () => {
     });
   });
 
+  it('only syncs a draft once when processQueue is called concurrently', async () => {
+    await queueDraftPost({
+      authorId: 'user-1',
+      cityId: 'city-1',
+      channelId: null,
+      postType: 'text',
+      body: 'Hello offline',
+    });
+
+    mockPostInsert.mockClear();
+
+    await Promise.all([processQueue(), processQueue()]);
+
+    expect(mockPostInsert).toHaveBeenCalledTimes(1);
+  });
+
   it('marks a draft as failed with an error message when sync fails, leaving it in the table', async () => {
     mockPostInsertSingle.mockResolvedValueOnce({ data: null, error: { message: 'network error' } });
 
