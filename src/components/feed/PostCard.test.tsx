@@ -31,6 +31,12 @@ vi.mock('../../hooks/useVoteOnPoll', () => ({
   useVoteOnPoll: () => ({ mutate: mockVoteOnPollMutate }),
 }));
 
+const mockCreateRepostMutate = vi.fn();
+
+vi.mock('../../hooks/useCreateRepost', () => ({
+  useCreateRepost: () => ({ mutate: mockCreateRepostMutate }),
+}));
+
 const post: Post = {
   id: 'post-1',
   author_id: 'user-2',
@@ -141,5 +147,43 @@ describe('PostCard', () => {
       cityId: 'city-1',
       channelId: null,
     });
+  });
+
+  it('shares a post when the Share button is clicked', async () => {
+    renderCard();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Share' }));
+
+    expect(mockCreateRepostMutate).toHaveBeenCalledWith({
+      authorId: 'user-1',
+      cityId: 'city-1',
+      channelId: null,
+      sharedPostId: 'post-1',
+    });
+  });
+
+  it('renders a shared-post preview for a repost', () => {
+    renderCard({
+      post_type: 'repost',
+      body: null,
+      shared_post: {
+        id: 'post-original',
+        post_type: 'text',
+        body: 'The original post',
+        author: { username: 'other', display_name: 'Other', avatar_url: null },
+        post_media: null,
+      },
+    });
+
+    expect(screen.getByText('shared a post', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('The original post')).toBeInTheDocument();
+    expect(screen.getByText('Other')).toBeInTheDocument();
+  });
+
+  it('shows a fallback when the shared post is no longer available', () => {
+    renderCard({ post_type: 'repost', body: null, shared_post: null });
+
+    expect(screen.getByText('This post is no longer available.')).toBeInTheDocument();
   });
 });

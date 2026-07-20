@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToggleLike } from '../../hooks/useToggleLike';
 import { useToggleBookmark } from '../../hooks/useToggleBookmark';
+import { useCreateRepost } from '../../hooks/useCreateRepost';
 import { CommentThread } from './CommentThread';
 import { PollOptionRow } from './PollOptionRow';
 import type { Post } from '../../types/post';
@@ -10,6 +11,7 @@ export function PostCard({ post }: { post: Post }) {
   const { session } = useAuth();
   const toggleLike = useToggleLike();
   const toggleBookmark = useToggleBookmark();
+  const createRepost = useCreateRepost();
   const [showComments, setShowComments] = useState(false);
 
   const viewerId = session?.user.id;
@@ -25,6 +27,27 @@ export function PostCard({ post }: { post: Post }) {
           <p className="text-xs text-muted-foreground">@{post.author.username}</p>
         </div>
       </div>
+
+      {post.post_type === 'repost' && (
+        <div className="mb-2">
+          <p className="mb-1 text-xs text-muted-foreground">🔁 shared a post</p>
+          {post.shared_post ? (
+            <div className="rounded-md border p-2">
+              <p className="text-xs font-medium">{post.shared_post.author.display_name}</p>
+              {post.shared_post.body && <p className="text-sm">{post.shared_post.body}</p>}
+              {post.shared_post.post_media && post.shared_post.post_media.media_type === 'photo' && (
+                <img
+                  src={post.shared_post.post_media.media_url}
+                  alt=""
+                  className="mt-1 max-h-64 w-full rounded object-cover"
+                />
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">This post is no longer available.</p>
+          )}
+        </div>
+      )}
 
       {post.body && <p className="mb-2 whitespace-pre-wrap">{post.body}</p>}
 
@@ -77,6 +100,21 @@ export function PostCard({ post }: { post: Post }) {
         </button>
         <button type="button" onClick={() => setShowComments((value) => !value)}>
           Comment ({post.comment_count})
+        </button>
+        <button
+          type="button"
+          disabled={!viewerId}
+          onClick={() =>
+            viewerId &&
+            createRepost.mutate({
+              authorId: viewerId,
+              cityId: post.city_id,
+              channelId: post.channel_id,
+              sharedPostId: post.id,
+            })
+          }
+        >
+          Share
         </button>
         <button
           type="button"
