@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { Type, Image, Video, MoreHorizontal } from 'lucide-react';
+import { Video, Image, Smile } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useProfile';
 import { useQueryClient } from '@tanstack/react-query';
 import { queueDraftPost, processQueue } from '../../lib/offlineQueue';
 import { getVideoDuration } from '../../lib/media';
+import { NodeAvatar } from '../NodeAvatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,12 +22,6 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import type { PostType } from '../../types/post';
-
-const QUICK_POST_TYPES: { value: PostType; label: string; icon: typeof Type }[] = [
-  { value: 'text', label: 'Text', icon: Type },
-  { value: 'photo', label: 'Photo', icon: Image },
-  { value: 'video', label: 'Video', icon: Video },
-];
 
 const MORE_POST_TYPES: { value: PostType; label: string }[] = [
   { value: 'poll', label: 'Poll' },
@@ -49,6 +45,7 @@ export function PostComposer({
   channelId?: string | null;
 }) {
   const { session } = useAuth();
+  const { data: profile } = useProfile(session?.user.id);
   const queryClient = useQueryClient();
   const [postType, setPostType] = useState<PostType>('text');
   const [body, setBody] = useState('');
@@ -62,6 +59,7 @@ export function PostComposer({
 
   const isMoreTypeSelected = MORE_POST_TYPES.some((type) => type.value === postType);
   const selectedMoreLabel = MORE_POST_TYPES.find((type) => type.value === postType)?.label;
+  const hasContent = body.trim().length > 0 || !!mediaFile || postType !== 'text';
 
   function updatePollOption(index: number, value: string) {
     setPollOptions((options) => options.map((option, i) => (i === index ? value : option)));
@@ -107,6 +105,7 @@ export function PostComposer({
       queryClient.invalidateQueries({ queryKey: ['drafts', session.user.id] });
       setBody('');
       setMediaFile(undefined);
+      setPostType('text');
       setPollOptions(['', '']);
       setPriceAmount('');
       setCategory('');
@@ -123,32 +122,56 @@ export function PostComposer({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-2 rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2">
-        {QUICK_POST_TYPES.map(({ value, label, icon: Icon }) => (
-          <Button
-            key={value}
-            type="button"
-            variant={postType === value ? 'default' : 'outline'}
-            size="icon"
-            aria-label={`${label} post`}
-            onClick={() => setPostType(value)}
-          >
-            <Icon size={18} />
-          </Button>
-        ))}
+    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-3 rounded-2xl border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <NodeAvatar name={profile?.display_name ?? '?'} size={44} />
+        <Input
+          placeholder="What's on your mind?"
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          className="flex-1 rounded-full border-none bg-muted px-4 py-6 text-base"
+        />
+      </div>
+
+      <div className="flex items-center justify-around border-t pt-3">
+        <button
+          type="button"
+          aria-label="Video post"
+          aria-pressed={postType === 'video'}
+          onClick={() => setPostType(postType === 'video' ? 'text' : 'video')}
+          className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            postType === 'video' ? 'bg-accent' : 'hover:bg-accent'
+          }`}
+        >
+          <Video size={22} className="text-red-500" />
+          Video
+        </button>
+        <button
+          type="button"
+          aria-label="Photo post"
+          aria-pressed={postType === 'photo'}
+          onClick={() => setPostType(postType === 'photo' ? 'text' : 'photo')}
+          className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            postType === 'photo' ? 'bg-accent' : 'hover:bg-accent'
+          }`}
+        >
+          <Image size={22} className="text-mesh-teal" />
+          Photo
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
+            <button
               type="button"
-              variant={isMoreTypeSelected ? 'default' : 'outline'}
-              size="icon"
               aria-label="More post types"
+              className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                isMoreTypeSelected ? 'bg-accent' : 'hover:bg-accent'
+              }`}
             >
-              <MoreHorizontal size={18} />
-            </Button>
+              <Smile size={22} className="text-mesh-gold" />
+              More
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
+          <DropdownMenuContent align="end">
             {MORE_POST_TYPES.map((type) => (
               <DropdownMenuItem key={type.value} onSelect={() => setPostType(type.value)}>
                 {type.label}
@@ -156,15 +179,11 @@ export function PostComposer({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        {isMoreTypeSelected && (
-          <span className="text-sm font-medium text-muted-foreground">{selectedMoreLabel}</span>
-        )}
       </div>
-      <Input
-        placeholder="What's happening?"
-        value={body}
-        onChange={(event) => setBody(event.target.value)}
-      />
+      {isMoreTypeSelected && (
+        <span className="text-sm font-medium text-muted-foreground">{selectedMoreLabel} post</span>
+      )}
+
       {(postType === 'photo' || postType === 'video') && (
         <label className="text-sm">
           {postType === 'photo' ? 'Photo' : 'Video'}
@@ -225,9 +244,11 @@ export function PostComposer({
           />
         </div>
       )}
-      <Button type="submit" disabled={submitting} className="rounded-full">
-        {submitting ? 'Saving…' : 'Post'}
-      </Button>
+      {hasContent && (
+        <Button type="submit" disabled={submitting} className="self-end rounded-full">
+          {submitting ? 'Saving…' : 'Post'}
+        </Button>
+      )}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </form>
   );

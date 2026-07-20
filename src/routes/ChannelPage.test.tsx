@@ -66,7 +66,7 @@ describe('ChannelPage', () => {
   it('shows the channel name and composer once the channel resolves', async () => {
     renderAt('/channels/pi-official');
     await waitFor(() => expect(screen.getByText('Pi Official')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Post' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("What's on your mind?")).toBeInTheDocument();
   });
 
   it('queries posts scoped to the resolved channel id, not the null city-feed scope', async () => {

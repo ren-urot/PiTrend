@@ -24,6 +24,21 @@ vi.mock('../../lib/media', () => ({
   getVideoDuration: vi.fn(),
 }));
 
+vi.mock('../../hooks/useProfile', () => ({
+  useProfile: () => ({
+    data: {
+      id: 'user-1',
+      username: 'ren',
+      display_name: 'Ren Urot',
+      avatar_url: null,
+      city_id: 'city-1',
+      reputation_score: 0,
+      created_at: '2026-01-01',
+    },
+    isLoading: false,
+  }),
+}));
+
 const mockQueueDraftPost = vi.mocked(queueDraftPost);
 const mockProcessQueue = vi.mocked(processQueue);
 const mockGetVideoDuration = vi.mocked(getVideoDuration);
@@ -52,7 +67,7 @@ describe('PostComposer', () => {
     renderComposer();
 
     const user = userEvent.setup();
-    await user.type(screen.getByPlaceholderText("What's happening?"), 'Hello Cebu!');
+    await user.type(screen.getByPlaceholderText("What's on your mind?"), 'Hello Cebu!');
     await user.click(screen.getByRole('button', { name: 'Post' }));
 
     await waitFor(() =>
@@ -74,7 +89,7 @@ describe('PostComposer', () => {
     renderComposer('channel-1');
 
     const user = userEvent.setup();
-    await user.type(screen.getByPlaceholderText("What's happening?"), 'Channel post');
+    await user.type(screen.getByPlaceholderText("What's on your mind?"), 'Channel post');
     await user.click(screen.getByRole('button', { name: 'Post' }));
 
     await waitFor(() =>

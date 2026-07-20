@@ -66,7 +66,7 @@ describe('FeedPage', () => {
   it('shows the city feed heading and composer once profile/cities have loaded', async () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Cebu City Feed')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Post' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("What's on your mind?")).toBeInTheDocument();
   });
 
   it('shows an empty state when there are no posts yet', async () => {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ThumbsUp, MessageCircle, Share2, Bookmark } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToggleLike } from '../../hooks/useToggleLike';
 import { useToggleBookmark } from '../../hooks/useToggleBookmark';
@@ -81,44 +82,59 @@ export function PostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <div className="flex gap-4 text-sm text-muted-foreground">
+      <div className="mt-1 flex items-center justify-between border-t pt-3 text-sm text-muted-foreground">
+        <div className="flex items-center gap-5">
+          <button
+            type="button"
+            disabled={!viewerId}
+            className="flex items-center gap-1.5"
+            onClick={() =>
+              viewerId &&
+              toggleLike.mutate({
+                postId: post.id,
+                userId: viewerId,
+                isLiked: post.viewer_has_liked,
+                cityId: post.city_id,
+                channelId: post.channel_id,
+              })
+            }
+          >
+            <ThumbsUp
+              size={18}
+              className={post.viewer_has_liked ? 'fill-primary text-primary' : ''}
+            />
+            {post.viewer_has_liked ? 'Liked' : 'Like'} ({post.like_count})
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-1.5"
+            onClick={() => setShowComments((value) => !value)}
+          >
+            <MessageCircle size={18} />
+            Comment ({post.comment_count})
+          </button>
+          <button
+            type="button"
+            disabled={!viewerId}
+            className="flex items-center gap-1.5"
+            onClick={() =>
+              viewerId &&
+              createRepost.mutate({
+                authorId: viewerId,
+                cityId: post.city_id,
+                channelId: post.channel_id,
+                sharedPostId: post.id,
+              })
+            }
+          >
+            <Share2 size={18} />
+            Share
+          </button>
+        </div>
         <button
           type="button"
           disabled={!viewerId}
-          onClick={() =>
-            viewerId &&
-            toggleLike.mutate({
-              postId: post.id,
-              userId: viewerId,
-              isLiked: post.viewer_has_liked,
-              cityId: post.city_id,
-              channelId: post.channel_id,
-            })
-          }
-        >
-          {post.viewer_has_liked ? 'Liked' : 'Like'} ({post.like_count})
-        </button>
-        <button type="button" onClick={() => setShowComments((value) => !value)}>
-          Comment ({post.comment_count})
-        </button>
-        <button
-          type="button"
-          disabled={!viewerId}
-          onClick={() =>
-            viewerId &&
-            createRepost.mutate({
-              authorId: viewerId,
-              cityId: post.city_id,
-              channelId: post.channel_id,
-              sharedPostId: post.id,
-            })
-          }
-        >
-          Share
-        </button>
-        <button
-          type="button"
-          disabled={!viewerId}
+          aria-label={post.viewer_has_bookmarked ? 'Bookmarked' : 'Bookmark'}
           onClick={() =>
             viewerId &&
             toggleBookmark.mutate({
@@ -130,7 +146,10 @@ export function PostCard({ post }: { post: Post }) {
             })
           }
         >
-          {post.viewer_has_bookmarked ? 'Bookmarked' : 'Bookmark'}
+          <Bookmark
+            size={18}
+            className={post.viewer_has_bookmarked ? 'fill-primary text-primary' : ''}
+          />
         </button>
       </div>
 
