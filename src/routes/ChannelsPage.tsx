@@ -25,19 +25,26 @@ export function ChannelsPage() {
         {visibleChannels?.map((channel) => {
           const isSubscribed = subscribedIds?.includes(channel.id) ?? false;
           return (
-            <div key={channel.id} className="flex items-center justify-between rounded-lg border bg-card p-3">
-              <div>
-                <Link to={`/channels/${channel.slug}`} className="font-medium hover:underline">
+            <div
+              key={channel.id}
+              className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <Link
+                  to={`/channels/${channel.slug}`}
+                  className="block truncate font-medium hover:underline"
+                >
                   {channel.name}
                 </Link>
                 {channel.description && (
-                  <p className="text-sm text-muted-foreground">{channel.description}</p>
+                  <p className="truncate text-sm text-muted-foreground">{channel.description}</p>
                 )}
               </div>
               <Button
                 type="button"
                 variant={isSubscribed ? 'outline' : 'default'}
                 size="sm"
+                className="shrink-0"
                 disabled={!viewerId}
                 onClick={() =>
                   viewerId &&

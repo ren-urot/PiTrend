@@ -82,12 +82,12 @@ export function PostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <div className="mt-1 flex items-center justify-between border-t pt-3 text-sm text-muted-foreground">
-        <div className="flex items-center gap-5">
+      <div className="mt-1 flex items-center justify-between gap-2 border-t pt-3 text-sm text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             disabled={!viewerId}
-            className="flex items-center gap-1.5"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() =>
               viewerId &&
               toggleLike.mutate({
@@ -101,22 +101,22 @@ export function PostCard({ post }: { post: Post }) {
           >
             <ThumbsUp
               size={18}
-              className={post.viewer_has_liked ? 'fill-primary text-primary' : ''}
+              className={`shrink-0 ${post.viewer_has_liked ? 'fill-primary text-primary' : ''}`}
             />
             {post.viewer_has_liked ? 'Liked' : 'Like'} ({post.like_count})
           </button>
           <button
             type="button"
-            className="flex items-center gap-1.5"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() => setShowComments((value) => !value)}
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={18} className="shrink-0" />
             Comment ({post.comment_count})
           </button>
           <button
             type="button"
             disabled={!viewerId}
-            className="flex items-center gap-1.5"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() =>
               viewerId &&
               createRepost.mutate({
@@ -127,13 +127,14 @@ export function PostCard({ post }: { post: Post }) {
               })
             }
           >
-            <Share2 size={18} />
+            <Share2 size={18} className="shrink-0" />
             Share
           </button>
         </div>
         <button
           type="button"
           disabled={!viewerId}
+          className="shrink-0"
           aria-label={post.viewer_has_bookmarked ? 'Bookmarked' : 'Bookmark'}
           onClick={() =>
             viewerId &&

@@ -34,10 +34,10 @@ export function MessagesPage() {
 
   return (
     <div className="mx-auto max-w-xl p-4">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <h1 className="font-display text-xl font-semibold">Messages</h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <MessageCirclePlus size={16} className="mr-1" />
+        <Button onClick={() => setDialogOpen(true)} className="shrink-0 whitespace-nowrap">
+          <MessageCirclePlus size={16} className="mr-1 shrink-0" />
           New message
         </Button>
       </div>

@@ -58,14 +58,14 @@ export function NewMessageDialog({ open, onOpenChange, currentUserId }: NewMessa
               key={profile.id}
               type="button"
               onClick={() => toggleSelected(profile.id)}
-              className={`flex items-center justify-between rounded-md p-2 text-left text-sm ${
+              className={`flex items-center justify-between gap-2 rounded-md p-2 text-left text-sm ${
                 selectedIds.includes(profile.id) ? 'bg-accent' : ''
               }`}
             >
-              <span>
+              <span className="min-w-0 flex-1 truncate">
                 {profile.display_name} (@{profile.username})
               </span>
-              {selectedIds.includes(profile.id) && <span>✓</span>}
+              {selectedIds.includes(profile.id) && <span className="shrink-0">✓</span>}
             </button>
           ))}
         </div>

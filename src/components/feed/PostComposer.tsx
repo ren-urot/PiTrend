@@ -139,7 +139,7 @@ export function PostComposer({
           aria-label="Video post"
           aria-pressed={postType === 'video'}
           onClick={() => setPostType(postType === 'video' ? 'text' : 'video')}
-          className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
             postType === 'video' ? 'bg-accent' : 'hover:bg-accent'
           }`}
         >
@@ -151,7 +151,7 @@ export function PostComposer({
           aria-label="Photo post"
           aria-pressed={postType === 'photo'}
           onClick={() => setPostType(postType === 'photo' ? 'text' : 'photo')}
-          className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
             postType === 'photo' ? 'bg-accent' : 'hover:bg-accent'
           }`}
         >
@@ -163,7 +163,7 @@ export function PostComposer({
             <button
               type="button"
               aria-label="More post types"
-              className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 isMoreTypeSelected ? 'bg-accent' : 'hover:bg-accent'
               }`}
             >
