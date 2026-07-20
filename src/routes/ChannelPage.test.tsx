@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChannelPage } from './ChannelPage';
 import { useChannels } from '../hooks/useChannels';
 import { usePosts } from '../hooks/usePosts';
@@ -31,9 +32,6 @@ vi.mock('../hooks/useProfile', () => ({
 
 vi.mock('../hooks/useChannels');
 vi.mock('../hooks/usePosts');
-vi.mock('../hooks/useCreatePost', () => ({
-  useCreatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
-}));
 
 const mockUseChannels = vi.mocked(useChannels);
 const mockUsePosts = vi.mocked(usePosts);
@@ -45,12 +43,15 @@ function renderAt(path: string) {
   } as any);
   mockUsePosts.mockReturnValue({ data: [], isLoading: false } as any);
 
+  const client = new QueryClient();
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/channels/:slug" element={<ChannelPage />} />
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/channels/:slug" element={<ChannelPage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 

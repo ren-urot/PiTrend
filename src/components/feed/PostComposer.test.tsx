@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PostComposer } from './PostComposer';
+import { queueDraftPost, processQueue } from '../../lib/offlineQueue';
 import { getVideoDuration } from '../../lib/media';
-
-const mockMutateAsync = vi.fn().mockResolvedValue({ id: 'post-1' });
 
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -15,43 +15,72 @@ vi.mock('../../hooks/useAuth', () => ({
   }),
 }));
 
-vi.mock('../../hooks/useCreatePost', () => ({
-  useCreatePost: () => ({ mutateAsync: mockMutateAsync, isPending: false }),
+vi.mock('../../lib/offlineQueue', () => ({
+  queueDraftPost: vi.fn(),
+  processQueue: vi.fn(),
 }));
 
 vi.mock('../../lib/media', () => ({
   getVideoDuration: vi.fn(),
 }));
 
+const mockQueueDraftPost = vi.mocked(queueDraftPost);
+const mockProcessQueue = vi.mocked(processQueue);
 const mockGetVideoDuration = vi.mocked(getVideoDuration);
+
+function renderComposer(channelId?: string | null) {
+  const client = new QueryClient();
+  render(
+    <QueryClientProvider client={client}>
+      <PostComposer cityId="city-1" channelId={channelId} />
+    </QueryClientProvider>
+  );
+}
 
 describe('PostComposer', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockMutateAsync.mockResolvedValue({ id: 'post-1' });
+    mockQueueDraftPost.mockReset().mockResolvedValue('draft-1');
+    mockProcessQueue.mockReset().mockResolvedValue(undefined);
   });
 
-  it('submits a text post with the default type', async () => {
-    render(<PostComposer cityId="city-1" />);
+  it('queues a text post as a draft and triggers an immediate sync attempt', async () => {
+    renderComposer();
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText("What's happening?"), 'Hello Cebu!');
     await user.click(screen.getByRole('button', { name: 'Post' }));
 
     await waitFor(() =>
-      expect(mockMutateAsync).toHaveBeenCalledWith({
+      expect(mockQueueDraftPost).toHaveBeenCalledWith({
         authorId: 'user-1',
         cityId: 'city-1',
         channelId: null,
         postType: 'text',
         body: 'Hello Cebu!',
-        mediaFile: undefined,
+        mediaBlob: undefined,
+        pollOptions: undefined,
+        buySell: undefined,
       })
+    );
+    await waitFor(() => expect(mockProcessQueue).toHaveBeenCalled());
+  });
+
+  it('passes a real channelId through when composing inside a channel', async () => {
+    renderComposer('channel-1');
+
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText("What's happening?"), 'Channel post');
+    await user.click(screen.getByRole('button', { name: 'Post' }));
+
+    await waitFor(() =>
+      expect(mockQueueDraftPost).toHaveBeenCalledWith(
+        expect.objectContaining({ channelId: 'channel-1' })
+      )
     );
   });
 
   it('shows a file picker only when the photo type is selected', async () => {
-    render(<PostComposer cityId="city-1" />);
+    renderComposer();
 
     expect(screen.queryByLabelText('Photo')).not.toBeInTheDocument();
 
@@ -62,8 +91,29 @@ describe('PostComposer', () => {
     expect(screen.getByLabelText('Photo')).toBeInTheDocument();
   });
 
-  it('submits poll options for a poll post', async () => {
-    render(<PostComposer cityId="city-1" />);
+  it('queues a photo post with the media file as a blob', async () => {
+    renderComposer();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Photo' }));
+
+    const file = new File(['fake-image-bytes'], 'photo.jpg', { type: 'image/jpeg' });
+    await user.upload(screen.getByLabelText('Photo'), file);
+    await user.click(screen.getByRole('button', { name: 'Post' }));
+
+    await waitFor(() =>
+      expect(mockQueueDraftPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          postType: 'photo',
+          mediaBlob: { blob: file, mediaType: 'photo' },
+        })
+      )
+    );
+  });
+
+  it('queues poll options for a poll post', async () => {
+    renderComposer();
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('combobox'));
@@ -75,7 +125,7 @@ describe('PostComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Post' }));
 
     await waitFor(() =>
-      expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect(mockQueueDraftPost).toHaveBeenCalledWith(
         expect.objectContaining({
           postType: 'poll',
           pollOptions: ['CnT', "Rico's"],
@@ -84,8 +134,8 @@ describe('PostComposer', () => {
     );
   });
 
-  it('submits price/currency/category for a buy & sell post', async () => {
-    render(<PostComposer cityId="city-1" />);
+  it('queues price/currency/category for a buy & sell post', async () => {
+    renderComposer();
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('combobox'));
@@ -96,7 +146,7 @@ describe('PostComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Post' }));
 
     await waitFor(() =>
-      expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect(mockQueueDraftPost).toHaveBeenCalledWith(
         expect.objectContaining({
           postType: 'buy_sell',
           buySell: { priceAmount: 3500, priceCurrency: 'PHP', category: 'Vehicles' },
@@ -107,7 +157,7 @@ describe('PostComposer', () => {
 
   it('blocks submission when a video exceeds the 60-second cap', async () => {
     mockGetVideoDuration.mockResolvedValue(90);
-    render(<PostComposer cityId="city-1" />);
+    renderComposer();
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('combobox'));
@@ -120,6 +170,6 @@ describe('PostComposer', () => {
     await waitFor(() =>
       expect(screen.getByText('Videos must be 60 seconds or shorter.')).toBeInTheDocument()
     );
-    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(mockQueueDraftPost).not.toHaveBeenCalled();
   });
 });

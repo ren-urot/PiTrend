@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useCreatePost } from '../../hooks/useCreatePost';
+import { useQueryClient } from '@tanstack/react-query';
+import { queueDraftPost, processQueue } from '../../lib/offlineQueue';
 import { getVideoDuration } from '../../lib/media';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,9 +31,15 @@ const CURRENCIES: { value: 'USD' | 'PHP' | 'PI'; label: string }[] = [
   { value: 'PI', label: 'PI' },
 ];
 
-export function PostComposer({ cityId, channelId = null }: { cityId: string; channelId?: string | null }) {
+export function PostComposer({
+  cityId,
+  channelId = null,
+}: {
+  cityId: string;
+  channelId?: string | null;
+}) {
   const { session } = useAuth();
-  const createPost = useCreatePost();
+  const queryClient = useQueryClient();
   const [postType, setPostType] = useState<PostType>('text');
   const [body, setBody] = useState('');
   const [mediaFile, setMediaFile] = useState<File | undefined>(undefined);
@@ -41,6 +48,7 @@ export function PostComposer({ cityId, channelId = null }: { cityId: string; cha
   const [priceCurrency, setPriceCurrency] = useState<'USD' | 'PHP' | 'PI'>('PHP');
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   function updatePollOption(index: number, value: string) {
     setPollOptions((options) => options.map((option, i) => (i === index ? value : option)));
@@ -63,29 +71,41 @@ export function PostComposer({ cityId, channelId = null }: { cityId: string; cha
       }
     }
 
+    setSubmitting(true);
+
     try {
-      await createPost.mutateAsync({
+      await queueDraftPost({
         authorId: session.user.id,
         cityId,
         channelId,
         postType,
         body: body.trim() || null,
-        mediaFile: postType === 'photo' || postType === 'video' ? mediaFile : undefined,
-        mediaType:
-          postType === 'video' ? 'video' : postType === 'photo' ? 'photo' : undefined,
+        mediaBlob:
+          (postType === 'photo' || postType === 'video') && mediaFile
+            ? { blob: mediaFile, mediaType: postType === 'video' ? 'video' : 'photo' }
+            : undefined,
         pollOptions: postType === 'poll' ? pollOptions.filter((option) => option.trim()) : undefined,
         buySell:
           postType === 'buy_sell'
             ? { priceAmount: Number(priceAmount), priceCurrency, category: category.trim() }
             : undefined,
       });
+
+      queryClient.invalidateQueries({ queryKey: ['drafts', session.user.id] });
       setBody('');
       setMediaFile(undefined);
       setPollOptions(['', '']);
       setPriceAmount('');
       setCategory('');
+
+      processQueue().then(() => {
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
+        queryClient.invalidateQueries({ queryKey: ['drafts'] });
+      });
     } catch {
-      setError("Couldn't create your post. Please try again.");
+      setError("Couldn't save your post. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -145,7 +165,10 @@ export function PostComposer({ cityId, channelId = null }: { cityId: string; cha
               value={priceAmount}
               onChange={(event) => setPriceAmount(event.target.value)}
             />
-            <Select value={priceCurrency} onValueChange={(value) => setPriceCurrency(value as 'USD' | 'PHP' | 'PI')}>
+            <Select
+              value={priceCurrency}
+              onValueChange={(value) => setPriceCurrency(value as 'USD' | 'PHP' | 'PI')}
+            >
               <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
@@ -165,8 +188,8 @@ export function PostComposer({ cityId, channelId = null }: { cityId: string; cha
           />
         </div>
       )}
-      <Button type="submit" disabled={createPost.isPending}>
-        {createPost.isPending ? 'Posting…' : 'Post'}
+      <Button type="submit" disabled={submitting}>
+        {submitting ? 'Saving…' : 'Post'}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </form>
