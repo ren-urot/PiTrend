@@ -30,7 +30,7 @@ const CURRENCIES: { value: 'USD' | 'PHP' | 'PI'; label: string }[] = [
   { value: 'PI', label: 'PI' },
 ];
 
-export function PostComposer({ cityId }: { cityId: string }) {
+export function PostComposer({ cityId, channelId = null }: { cityId: string; channelId?: string | null }) {
   const { session } = useAuth();
   const createPost = useCreatePost();
   const [postType, setPostType] = useState<PostType>('text');
@@ -67,7 +67,7 @@ export function PostComposer({ cityId }: { cityId: string }) {
       await createPost.mutateAsync({
         authorId: session.user.id,
         cityId,
-        channelId: null,
+        channelId,
         postType,
         body: body.trim() || null,
         mediaFile: postType === 'photo' || postType === 'video' ? mediaFile : undefined,
