@@ -10,17 +10,21 @@ const mockPostsData = [
     author_id: 'user-1',
     city_id: 'city-1',
     channel_id: null,
-    post_type: 'poll',
-    body: 'Best lechon in town?',
-    shared_post_id: null,
-    created_at: '2026-01-01T00:00:00Z',
+    post_type: 'repost',
+    body: null,
+    shared_post_id: 'post-original',
+    created_at: '2026-01-03T00:00:00Z',
     author: { username: 'renz', display_name: 'Ren', avatar_url: null },
     post_media: null,
-    poll_options: [
-      { id: 'opt-1', option_text: 'CnT', display_order: 0, poll_votes: [{ count: 3 }] },
-      { id: 'opt-2', option_text: 'Rico\'s', display_order: 1, poll_votes: [{ count: 1 }] },
-    ],
+    poll_options: [],
     post_buy_sell: null,
+    shared_post: {
+      id: 'post-original',
+      post_type: 'text',
+      body: 'The original post',
+      author: { username: 'other', display_name: 'Other', avatar_url: null },
+      post_media: null,
+    },
     likes: [{ count: 0 }],
     comments: [{ count: 0 }],
   },
@@ -29,14 +33,15 @@ const mockPostsData = [
     author_id: 'user-2',
     city_id: 'city-1',
     channel_id: null,
-    post_type: 'buy_sell',
-    body: 'Selling my bike',
-    shared_post_id: null,
-    created_at: '2026-01-02T00:00:00Z',
-    author: { username: 'other', display_name: 'Other', avatar_url: null },
+    post_type: 'repost',
+    body: null,
+    shared_post_id: 'post-deleted',
+    created_at: '2026-01-04T00:00:00Z',
+    author: { username: 'other2', display_name: 'Other Two', avatar_url: null },
     post_media: null,
     poll_options: [],
-    post_buy_sell: { price_amount: 3500, price_currency: 'PHP', category: 'Vehicles' },
+    post_buy_sell: null,
+    shared_post: null,
     likes: [{ count: 0 }],
     comments: [{ count: 0 }],
   },
@@ -56,7 +61,7 @@ const mockBookmarksIn = vi.fn().mockResolvedValue({ data: [] });
 const mockBookmarksEq = vi.fn(() => ({ in: mockBookmarksIn }));
 const mockBookmarksSelect = vi.fn(() => ({ eq: mockBookmarksEq }));
 
-const mockVotesIn = vi.fn().mockResolvedValue({ data: [{ post_id: 'post-1', poll_option_id: 'opt-1' }] });
+const mockVotesIn = vi.fn().mockResolvedValue({ data: [] });
 const mockVotesEq = vi.fn(() => ({ in: mockVotesIn }));
 const mockVotesSelect = vi.fn(() => ({ eq: mockVotesEq }));
 
@@ -77,33 +82,26 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 describe('usePosts', () => {
-  it('returns poll tallies, the viewer\'s own vote, and buy & sell details', async () => {
+  it('returns the shared-post preview for a repost, or null if the original is gone', async () => {
     mockLimit.mockResolvedValue({ data: mockPostsData, error: null });
 
     const { result } = renderHook(
-      () => usePosts({ cityId: 'city-1', channelId: null, viewerId: 'user-1' }),
+      () => usePosts({ cityId: 'city-1', channelId: null, viewerId: undefined }),
       { wrapper }
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const [pollPost, buySellPost] = result.current.data!;
+    const [repostWithOriginal, repostWithDeletedOriginal] = result.current.data!;
 
-    expect(pollPost.poll).toEqual({
-      options: [
-        { id: 'opt-1', option_text: 'CnT', display_order: 0, vote_count: 3 },
-        { id: 'opt-2', option_text: 'Rico\'s', display_order: 1, vote_count: 1 },
-      ],
-      viewer_vote_option_id: 'opt-1',
+    expect(repostWithOriginal.shared_post).toEqual({
+      id: 'post-original',
+      post_type: 'text',
+      body: 'The original post',
+      author: { username: 'other', display_name: 'Other', avatar_url: null },
+      post_media: null,
     });
-    expect(pollPost.buy_sell).toBeNull();
-
-    expect(buySellPost.poll).toBeNull();
-    expect(buySellPost.buy_sell).toEqual({
-      price_amount: 3500,
-      price_currency: 'PHP',
-      category: 'Vehicles',
-    });
+    expect(repostWithDeletedOriginal.shared_post).toBeNull();
 
     expect(mockSelect).toHaveBeenCalledWith(
       'id, author_id, city_id, channel_id, post_type, body, shared_post_id, created_at, ' +
@@ -111,6 +109,9 @@ describe('usePosts', () => {
         'post_media(media_url, media_type, duration_seconds), ' +
         'poll_options(id, option_text, display_order, poll_votes(count)), ' +
         'post_buy_sell(price_amount, price_currency, category), ' +
+        'shared_post:posts!shared_post_id(id, post_type, body, ' +
+        'author:profiles!posts_author_id_fkey(username, display_name, avatar_url), ' +
+        'post_media(media_url, media_type, duration_seconds)), ' +
         'likes(count), comments(count)'
     );
   });

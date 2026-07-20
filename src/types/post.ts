@@ -15,6 +15,20 @@ export interface PostAuthor {
   avatar_url: string | null;
 }
 
+export interface SharedPostAuthor {
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+}
+
+export interface SharedPost {
+  id: string;
+  post_type: PostType;
+  body: string | null;
+  author: SharedPostAuthor;
+  post_media: PostMedia | null;
+}
+
 export interface PostMedia {
   media_url: string;
   media_type: 'photo' | 'video';
@@ -47,6 +61,7 @@ export interface Post {
   post_type: PostType;
   body: string | null;
   shared_post_id: string | null;
+  shared_post: SharedPost | null;
   created_at: string;
   author: PostAuthor;
   post_media: PostMedia | null;

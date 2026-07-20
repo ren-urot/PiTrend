@@ -80,6 +80,7 @@ describe('FeedPage', () => {
           post_type: 'text',
           body: 'Hello Cebu!',
           shared_post_id: null,
+          shared_post: null,
           created_at: '2026-01-01T00:00:00Z',
           author: { username: 'renz', display_name: 'Ren', avatar_url: null },
           post_media: null,

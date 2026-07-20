@@ -22,6 +22,13 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
             'post_media(media_url, media_type, duration_seconds), ' +
             'poll_options(id, option_text, display_order, poll_votes(count)), ' +
             'post_buy_sell(price_amount, price_currency, category), ' +
+            // Self-referential FK (posts embedding posts) needs the column-name hint form.
+            // The constraint-name hint (!posts_shared_post_id_fkey) used elsewhere in this
+            // file returns a PGRST200 "could not find relationship" error against the live
+            // project despite the constraint existing — don't "fix" this back to that form.
+            'shared_post:posts!shared_post_id(id, post_type, body, ' +
+              'author:profiles!posts_author_id_fkey(username, display_name, avatar_url), ' +
+              'post_media(media_url, media_type, duration_seconds)), ' +
             'likes(count), comments(count)'
         );
 
@@ -58,6 +65,7 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
         post_type: row.post_type,
         body: row.body,
         shared_post_id: row.shared_post_id,
+        shared_post: row.shared_post ?? null,
         created_at: row.created_at,
         author: row.author,
         post_media: row.post_media ?? null,
