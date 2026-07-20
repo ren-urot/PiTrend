@@ -5,6 +5,14 @@ create table public.conversations (
   created_at timestamptz not null default now()
 );
 
+create table public.conversation_participants (
+  conversation_id uuid not null references public.conversations(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  joined_at timestamptz not null default now(),
+  last_read_at timestamptz not null default now(),
+  primary key (conversation_id, user_id)
+);
+
 alter table public.conversations enable row level security;
 
 create policy "Participants can read their conversations"
@@ -22,14 +30,6 @@ create policy "Authenticated users can create conversations"
   on public.conversations for insert
   to authenticated
   with check (true);
-
-create table public.conversation_participants (
-  conversation_id uuid not null references public.conversations(id) on delete cascade,
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  joined_at timestamptz not null default now(),
-  last_read_at timestamptz not null default now(),
-  primary key (conversation_id, user_id)
-);
 
 alter table public.conversation_participants enable row level security;
 
