@@ -45,11 +45,21 @@ export function useCreateConversation() {
         if (existingId) return existingId;
       }
 
-      const { data: conversation, error: conversationError } = await supabase
-        .from('conversations')
-        .insert({ is_group: input.isGroup, name: input.isGroup ? (input.name ?? null) : null })
-        .select('id')
-        .single();
+      // The conversation id is generated client-side (matching the pattern
+      // already used by offlineQueue.ts's queueDraftPost and
+      // useMessageActions.ts's useSendMessage) so this insert never needs
+      // `.select().single()` return-representation. That matters here
+      // specifically: the `conversations` SELECT RLS policy requires being
+      // a participant, but the creator isn't a participant yet at the
+      // instant this row is inserted — asking PostgREST to hand the new
+      // row back would fail RLS and 403, even though the insert itself is
+      // permitted. Knowing the id upfront sidesteps that entirely.
+      const conversationId = crypto.randomUUID();
+      const { error: conversationError } = await supabase.from('conversations').insert({
+        id: conversationId,
+        is_group: input.isGroup,
+        name: input.isGroup ? (input.name ?? null) : null,
+      });
       if (conversationError) throw conversationError;
 
       // Two sequential inserts, not one batched insert — see this plan's Global
@@ -57,18 +67,18 @@ export function useCreateConversation() {
       // check can't see other not-yet-committed rows from the same statement.
       const { error: selfError } = await supabase
         .from('conversation_participants')
-        .insert({ conversation_id: conversation.id, user_id: input.creatorId });
+        .insert({ conversation_id: conversationId, user_id: input.creatorId });
       if (selfError) throw selfError;
 
       const { error: othersError } = await supabase.from('conversation_participants').insert(
         input.participantIds.map((userId) => ({
-          conversation_id: conversation.id,
+          conversation_id: conversationId,
           user_id: userId,
         }))
       );
       if (othersError) throw othersError;
 
-      return conversation.id;
+      return conversationId;
     },
     onSuccess: (_conversationId, variables) => {
       queryClient.invalidateQueries({ queryKey: ['conversations', variables.creatorId] });

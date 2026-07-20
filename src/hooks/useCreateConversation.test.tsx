@@ -31,15 +31,11 @@ function wrapper({ children }: { children: ReactNode }) {
 describe('useCreateConversation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockConversationsInsert.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({ data: { id: 'new-conv' }, error: null }),
-      }),
-    });
+    mockConversationsInsert.mockResolvedValue({ error: null });
     mockParticipantsInsert.mockResolvedValue({ error: null });
   });
 
-  it('creates a new 1:1 conversation with a two-step participant insert when none exists yet', async () => {
+  it('creates a new 1:1 conversation with a client-generated id and a two-step participant insert when none exists yet', async () => {
     mockParticipantsSelect.mockReturnValue({
       eq: vi.fn().mockResolvedValue({ data: [], error: null }),
     });
@@ -54,10 +50,23 @@ describe('useCreateConversation', () => {
       });
     });
 
-    expect(conversationId).toBe('new-conv');
-    expect(mockConversationsInsert).toHaveBeenCalledWith({ is_group: false, name: null });
-    expect(mockParticipantsInsert).toHaveBeenNthCalledWith(1, { conversation_id: 'new-conv', user_id: 'user-1' });
-    expect(mockParticipantsInsert).toHaveBeenNthCalledWith(2, [{ conversation_id: 'new-conv', user_id: 'user-2' }]);
+    // Id is generated client-side (crypto.randomUUID()), not returned by
+    // the insert, so assert it's a valid UUID and that the SAME id was
+    // used consistently across the conversation insert and both
+    // participant inserts, rather than hardcoding a mock-returned value.
+    expect(conversationId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(mockConversationsInsert).toHaveBeenCalledWith({
+      id: conversationId,
+      is_group: false,
+      name: null,
+    });
+    expect(mockParticipantsInsert).toHaveBeenNthCalledWith(1, {
+      conversation_id: conversationId,
+      user_id: 'user-1',
+    });
+    expect(mockParticipantsInsert).toHaveBeenNthCalledWith(2, [
+      { conversation_id: conversationId, user_id: 'user-2' },
+    ]);
   });
 
   it('reuses an existing 1:1 conversation instead of creating a duplicate', async () => {
@@ -99,11 +108,15 @@ describe('useCreateConversation', () => {
       });
     });
 
-    expect(conversationId).toBe('new-conv');
-    expect(mockConversationsInsert).toHaveBeenCalledWith({ is_group: true, name: 'Weekend Hikers' });
+    expect(conversationId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(mockConversationsInsert).toHaveBeenCalledWith({
+      id: conversationId,
+      is_group: true,
+      name: 'Weekend Hikers',
+    });
     expect(mockParticipantsInsert).toHaveBeenNthCalledWith(2, [
-      { conversation_id: 'new-conv', user_id: 'user-2' },
-      { conversation_id: 'new-conv', user_id: 'user-3' },
+      { conversation_id: conversationId, user_id: 'user-2' },
+      { conversation_id: conversationId, user_id: 'user-3' },
     ]);
   });
 });
