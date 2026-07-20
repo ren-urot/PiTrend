@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { ImagePlus, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useMessages } from '../hooks/useMessages';
 import { useConversation } from '../hooks/useConversations';
@@ -22,6 +23,7 @@ export function ConversationPage() {
   const markAsRead = useMarkAsRead();
   const [body, setBody] = useState('');
   const [mediaFile, setMediaFile] = useState<File | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!conversationId || !session?.user.id) return;
@@ -44,18 +46,19 @@ export function ConversationPage() {
     });
     setBody('');
     setMediaFile(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   if (!conversationId) return null;
 
   return (
-    <div className="mx-auto flex h-full max-w-xl flex-col p-4">
+    <div className="mx-auto flex max-w-xl flex-col p-4">
       <div className="mb-4 flex items-center gap-3">
         <NodeAvatar name={conversationName} size={36} />
         <h1 className="font-display text-xl font-semibold">{conversationName}</h1>
       </div>
       {isLoading && <p className="text-muted-foreground">Loading messages…</p>}
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-col gap-3 pb-4">
         {messages?.map((message) => {
           const isOwn = message.sender_id === session?.user.id;
           return (
@@ -92,17 +95,44 @@ export function ConversationPage() {
           );
         })}
       </div>
-      <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
-        <label className="text-sm">
-          Photo
+      <form
+        onSubmit={handleSubmit}
+        className="sticky bottom-16 z-10 mt-2 flex flex-col gap-2 rounded-lg border bg-card p-2 shadow-md md:bottom-4"
+      >
+        {mediaFile && (
+          <div className="flex items-center justify-between rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+            <span className="truncate">{mediaFile.name}</span>
+            <button
+              type="button"
+              aria-label="Remove photo"
+              onClick={() => {
+                setMediaFile(undefined);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             aria-label="Photo"
+            className="hidden"
             onChange={(event) => setMediaFile(event.target.files?.[0])}
           />
-        </label>
-        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            aria-label="Attach photo"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <ImagePlus size={18} />
+          </Button>
           <Input
             placeholder="Message…"
             value={body}
