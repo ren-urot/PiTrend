@@ -25,7 +25,7 @@ describe('LoginPage', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText('you@example.com'), 'ren@example.com');
-    await user.click(screen.getByRole('button', { name: 'Send magic link' }));
+    await user.click(screen.getByRole('button', { name: 'Send link' }));
 
     await waitFor(() => expect(screen.getByText('Check your email')).toBeInTheDocument());
     expect(mockSignInWithEmail).toHaveBeenCalledWith('ren@example.com');

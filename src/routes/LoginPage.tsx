@@ -48,7 +48,7 @@ export function LoginPage() {
           required
         />
         <Button type="submit" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : 'Send magic link'}
+          {status === 'sending' ? 'Sending…' : 'Send link'}
         </Button>
         {status === 'error' && <p className="text-sm text-destructive">{errorMessage}</p>}
       </form>
