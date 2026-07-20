@@ -57,6 +57,13 @@ vi.mock('../lib/supabase', () => ({
           }),
         };
       }
+      if (table === 'conversation_participants') {
+        return {
+          select: () => ({
+            eq: () => Promise.resolve({ data: [], error: null }),
+          }),
+        };
+      }
       return {
         select: () => ({
           eq: () => ({
@@ -69,6 +76,10 @@ vi.mock('../lib/supabase', () => ({
         },
       };
     },
+    channel: () => ({
+      on: () => ({ subscribe: vi.fn() }),
+    }),
+    removeChannel: vi.fn(),
   },
 }));
 
