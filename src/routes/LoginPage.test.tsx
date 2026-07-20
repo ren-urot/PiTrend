@@ -11,6 +11,7 @@ vi.mock('../hooks/useAuth', () => ({
     session: null,
     loading: false,
     signInWithEmail: mockSignInWithEmail,
+    verifyOtp: vi.fn().mockResolvedValue({ error: null }),
     signOut: vi.fn(),
   }),
 }));

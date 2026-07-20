@@ -17,6 +17,7 @@ beforeEach(() => {
     session: { user: { id: 'user-1' } } as any,
     loading: false,
     signInWithEmail: vi.fn(),
+    verifyOtp: vi.fn(),
     signOut: vi.fn(),
   });
   mockEq.mockClear();
@@ -79,6 +80,7 @@ describe('ProfilePage', () => {
       session: null as any,
       loading: true,
       signInWithEmail: vi.fn(),
+    verifyOtp: vi.fn(),
       signOut: vi.fn(),
     });
 

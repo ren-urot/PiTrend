@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export function LoginPage() {
-  const { session, loading, signInWithEmail } = useAuth();
+  const { session, loading, signInWithEmail, verifyOtp } = useAuth();
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [code, setCode] = useState('');
+  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'verifying' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!loading && session) {
@@ -23,14 +25,43 @@ export function LoginPage() {
       setStatus('error');
       return;
     }
-    setStatus('sent');
+    setStatus('idle');
+    setSent(true);
   }
 
-  if (status === 'sent') {
+  async function handleVerifyCode(event: FormEvent) {
+    event.preventDefault();
+    setStatus('verifying');
+    const { error } = await verifyOtp(email, code);
+    if (error) {
+      setErrorMessage(error);
+      setStatus('error');
+      return;
+    }
+    // On success the session updates via onAuthStateChange and this
+    // component re-renders into the `session` redirect above.
+  }
+
+  if (sent) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-2 p-6 text-center">
         <p className="text-lg font-semibold">Check your email</p>
-        <p className="text-muted-foreground">We sent a login link to {email}.</p>
+        <p className="text-muted-foreground">
+          We sent a login link to {email}. Click that link, or enter the 6-digit code from that
+          email below — either one logs you in.
+        </p>
+        <form onSubmit={handleVerifyCode} className="mt-2 flex w-full max-w-sm flex-col gap-3">
+          <Input
+            placeholder="6-digit code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
+          <Button type="submit" disabled={status === 'verifying'}>
+            {status === 'verifying' ? 'Verifying…' : 'Verify code'}
+          </Button>
+          {status === 'error' && <p className="text-sm text-destructive">{errorMessage}</p>}
+        </form>
       </div>
     );
   }
