@@ -5,8 +5,13 @@ import { useMessages } from '../hooks/useMessages';
 import { useConversation } from '../hooks/useConversations';
 import { useSendMessage, useMarkAsRead } from '../hooks/useMessageActions';
 import { getConversationDisplayName } from '../lib/conversationDisplay';
+import { NodeAvatar } from '../components/NodeAvatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
 
 export function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -24,6 +29,7 @@ export function ConversationPage() {
   }, [conversationId, session?.user.id]);
 
   const senderNames = new Map((conversation?.participants ?? []).map((p) => [p.user_id, p.display_name]));
+  const conversationName = conversation ? getConversationDisplayName(conversation) : 'Conversation';
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -44,27 +50,47 @@ export function ConversationPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-xl flex-col p-4">
-      <h1 className="mb-4 text-xl font-semibold">
-        {conversation ? getConversationDisplayName(conversation) : 'Conversation'}
-      </h1>
+      <div className="mb-4 flex items-center gap-3">
+        <NodeAvatar name={conversationName} size={36} />
+        <h1 className="font-display text-xl font-semibold">{conversationName}</h1>
+      </div>
       {isLoading && <p className="text-muted-foreground">Loading messages…</p>}
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto">
-        {messages?.map((message) => (
-          <div
-            key={message.id}
-            className={`max-w-[80%] rounded-lg p-2 ${
-              message.sender_id === session?.user.id
-                ? 'self-end bg-primary text-primary-foreground'
-                : 'self-start bg-muted'
-            }`}
-          >
-            {message.sender_id !== session?.user.id && (
-              <p className="text-xs opacity-70">{senderNames.get(message.sender_id) ?? 'Unknown'}</p>
-            )}
-            {message.body && <p>{message.body}</p>}
-            {message.media_url && <img src={message.media_url} alt="" className="mt-1 max-w-full rounded" />}
-          </div>
-        ))}
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+        {messages?.map((message) => {
+          const isOwn = message.sender_id === session?.user.id;
+          return (
+            <div
+              key={message.id}
+              className={`flex items-end gap-2 ${isOwn ? 'flex-row-reverse self-end' : 'self-start'}`}
+            >
+              {!isOwn && <NodeAvatar name={senderNames.get(message.sender_id) ?? 'Unknown'} size={28} />}
+              <div
+                className={`max-w-[75%] rounded-2xl px-3 py-2 ${
+                  isOwn
+                    ? 'rounded-br-sm bg-primary text-primary-foreground'
+                    : 'rounded-bl-sm border border-border bg-card'
+                }`}
+              >
+                {!isOwn && (
+                  <p className="font-display text-xs font-medium opacity-70">
+                    {senderNames.get(message.sender_id) ?? 'Unknown'}
+                  </p>
+                )}
+                {message.body && <p>{message.body}</p>}
+                {message.media_url && (
+                  <img src={message.media_url} alt="" className="mt-1 max-w-full rounded-lg" />
+                )}
+                <p
+                  className={`mt-1 font-mono text-[10px] ${
+                    isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                  }`}
+                >
+                  {formatTime(message.created_at)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
       <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
         <label className="text-sm">

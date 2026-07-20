@@ -33,7 +33,7 @@ describe('MessagesPage', () => {
   it('shows an empty state when there are no conversations', () => {
     mockUseConversations.mockReturnValue({ data: [], isLoading: false } as any);
     renderPage();
-    expect(screen.getByText('No conversations yet — start one!')).toBeInTheDocument();
+    expect(screen.getByText('No conversations yet — start one to join the mesh!')).toBeInTheDocument();
   });
 
   it('lists conversations with their display name, preview, and unread badge', () => {

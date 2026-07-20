@@ -4,48 +4,52 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* PiMesh: a mesh of Pi Network Pioneers. Palette is built around Pi
+       Network's own violet identity plus two accents drawn from the
+       Philippine community context (golden-hour gold, signal teal),
+       rather than the neutral zinc default. */
+    --background: 252 33% 98%;
+    --foreground: 260 32% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 260 32% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
+    --popover-foreground: 260 32% 13%;
+    --primary: 258 68% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 252 25% 95%;
+    --secondary-foreground: 260 32% 13%;
+    --muted: 252 20% 95%;
+    --muted-foreground: 258 10% 46%;
+    --accent: 252 25% 93%;
+    --accent-foreground: 260 32% 13%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 252 20% 88%;
+    --input: 252 20% 88%;
+    --ring: 258 68% 54%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --background: 260 30% 8%;
+    --foreground: 252 20% 96%;
+    --card: 260 28% 11%;
+    --card-foreground: 252 20% 96%;
+    --popover: 260 28% 11%;
+    --popover-foreground: 252 20% 96%;
+    --primary: 258 75% 68%;
+    --primary-foreground: 260 30% 10%;
+    --secondary: 260 20% 16%;
+    --secondary-foreground: 252 20% 96%;
+    --muted: 260 18% 16%;
+    --muted-foreground: 252 12% 65%;
+    --accent: 260 20% 18%;
+    --accent-foreground: 252 20% 96%;
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 252 20% 96%;
+    --border: 260 18% 20%;
+    --input: 260 18% 20%;
+    --ring: 258 75% 68%;
   }
 }
 
