@@ -16,14 +16,12 @@ export function NewMessageDialog({ open, onOpenChange, currentUserId }: NewMessa
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [_selectedNames, setSelectedNames] = useState<Record<string, string>>({});
   const [groupName, setGroupName] = useState('');
   const { data: results } = useSearchProfiles(query, currentUserId ?? '');
   const createConversation = useCreateConversation();
 
-  function toggleSelected(userId: string, displayName: string) {
+  function toggleSelected(userId: string) {
     setSelectedIds((ids) => (ids.includes(userId) ? ids.filter((id) => id !== userId) : [...ids, userId]));
-    setSelectedNames((names) => ({ ...names, [userId]: displayName }));
   }
 
   async function handleStart() {
@@ -38,7 +36,6 @@ export function NewMessageDialog({ open, onOpenChange, currentUserId }: NewMessa
 
     setQuery('');
     setSelectedIds([]);
-    setSelectedNames({});
     setGroupName('');
     onOpenChange(false);
     navigate(`/messages/${conversationId}`);
@@ -60,7 +57,7 @@ export function NewMessageDialog({ open, onOpenChange, currentUserId }: NewMessa
             <button
               key={profile.id}
               type="button"
-              onClick={() => toggleSelected(profile.id, profile.display_name)}
+              onClick={() => toggleSelected(profile.id)}
               className={`flex items-center justify-between rounded-md p-2 text-left text-sm ${
                 selectedIds.includes(profile.id) ? 'bg-accent' : ''
               }`}
