@@ -9,6 +9,9 @@ interface CreatePostInput {
   postType: PostType;
   body: string | null;
   mediaFile?: File;
+  mediaType?: 'photo' | 'video';
+  pollOptions?: string[];
+  buySell?: { priceAmount: number; priceCurrency: 'USD' | 'PHP' | 'PI'; category: string };
 }
 
 export function useCreatePost() {
@@ -43,9 +46,33 @@ export function useCreatePost() {
         const { error: mediaError } = await supabase.from('post_media').insert({
           post_id: post.id,
           media_url: publicUrlData.publicUrl,
-          media_type: 'photo',
+          media_type: input.mediaType ?? 'photo',
         });
         if (mediaError) throw mediaError;
+      }
+
+      if (input.postType === 'poll' && input.pollOptions) {
+        const { error: pollError } = await supabase.from('post_polls').insert({ post_id: post.id });
+        if (pollError) throw pollError;
+
+        const { error: optionsError } = await supabase.from('poll_options').insert(
+          input.pollOptions.map((optionText, index) => ({
+            post_id: post.id,
+            option_text: optionText,
+            display_order: index,
+          }))
+        );
+        if (optionsError) throw optionsError;
+      }
+
+      if (input.postType === 'buy_sell' && input.buySell) {
+        const { error: buySellError } = await supabase.from('post_buy_sell').insert({
+          post_id: post.id,
+          price_amount: input.buySell.priceAmount,
+          price_currency: input.buySell.priceCurrency,
+          category: input.buySell.category,
+        });
+        if (buySellError) throw buySellError;
       }
 
       return post;
