@@ -739,7 +739,7 @@ vi.mock('../../lib/media', () => ({
 const mockGetVideoDuration = vi.mocked(getVideoDuration);
 ```
 
-(add this near the top, alongside the existing `mockMutateAsync` setup) and these test cases inside the `describe` block:
+(add this near the top, alongside the existing `mockMutateAsync` setup). This file has no global mock-clearing configured (no `clearMocks`/`restoreMocks` in `vite.config.ts`), so `mockMutateAsync`'s call history accumulates across `it()` blocks in file order — add a `beforeEach(() => { vi.clearAllMocks(); mockMutateAsync.mockResolvedValue({ id: 'post-1' }); })` near the top of the `describe` block, or the video-cap test's `.not.toHaveBeenCalled()` assertion below will see leftover calls from the poll/buy-sell tests and fail for the wrong reason. Then add these test cases inside the `describe` block:
 
 ```tsx
   it('submits poll options for a poll post', async () => {
@@ -887,7 +887,7 @@ export function PostComposer({ cityId }: { cityId: string }) {
         postType,
         body: body.trim() || null,
         mediaFile: postType === 'photo' || postType === 'video' ? mediaFile : undefined,
-        mediaType: postType === 'video' ? 'video' : 'photo',
+        mediaType: postType === 'video' ? 'video' : postType === 'photo' ? 'photo' : undefined,
         pollOptions: postType === 'poll' ? pollOptions.filter((option) => option.trim()) : undefined,
         buySell:
           postType === 'buy_sell'
