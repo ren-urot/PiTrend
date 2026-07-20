@@ -83,6 +83,8 @@ describe('FeedPage', () => {
           created_at: '2026-01-01T00:00:00Z',
           author: { username: 'renz', display_name: 'Ren', avatar_url: null },
           post_media: null,
+          poll: null,
+          buy_sell: null,
           like_count: 0,
           comment_count: 0,
           viewer_has_liked: false,

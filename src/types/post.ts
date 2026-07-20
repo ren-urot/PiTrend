@@ -21,6 +21,24 @@ export interface PostMedia {
   duration_seconds: number | null;
 }
 
+export interface PollOption {
+  id: string;
+  option_text: string;
+  display_order: number;
+  vote_count: number;
+}
+
+export interface Poll {
+  options: PollOption[];
+  viewer_vote_option_id: string | null;
+}
+
+export interface BuySellDetails {
+  price_amount: number;
+  price_currency: 'USD' | 'PHP' | 'PI';
+  category: string;
+}
+
 export interface Post {
   id: string;
   author_id: string;
@@ -32,6 +50,8 @@ export interface Post {
   created_at: string;
   author: PostAuthor;
   post_media: PostMedia | null;
+  poll: Poll | null;
+  buy_sell: BuySellDetails | null;
   like_count: number;
   comment_count: number;
   viewer_has_liked: boolean;

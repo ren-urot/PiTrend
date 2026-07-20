@@ -36,6 +36,8 @@ const post: Post = {
   created_at: '2026-01-01T00:00:00Z',
   author: { username: 'other', display_name: 'Other User', avatar_url: null },
   post_media: null,
+  poll: null,
+  buy_sell: null,
   like_count: 3,
   comment_count: 2,
   viewer_has_liked: false,

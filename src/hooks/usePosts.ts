@@ -20,6 +20,8 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
           'id, author_id, city_id, channel_id, post_type, body, shared_post_id, created_at, ' +
             'author:profiles!posts_author_id_fkey(username, display_name, avatar_url), ' +
             'post_media(media_url, media_type, duration_seconds), ' +
+            'poll_options(id, option_text, display_order, poll_votes(count)), ' +
+            'post_buy_sell(price_amount, price_currency, category), ' +
             'likes(count), comments(count)'
         );
 
@@ -35,14 +37,17 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
 
       let likedIds = new Set<string>();
       let bookmarkedIds = new Set<string>();
+      let viewerVotes = new Map<string, string>();
 
       if (viewerId && postIds.length > 0) {
-        const [{ data: likedRows }, { data: bookmarkedRows }] = await Promise.all([
+        const [{ data: likedRows }, { data: bookmarkedRows }, { data: voteRows }] = await Promise.all([
           supabase.from('likes').select('post_id').eq('user_id', viewerId).in('post_id', postIds),
           supabase.from('bookmarks').select('post_id').eq('user_id', viewerId).in('post_id', postIds),
+          supabase.from('poll_votes').select('post_id, poll_option_id').eq('voter_id', viewerId).in('post_id', postIds),
         ]);
         likedIds = new Set((likedRows ?? []).map((row: any) => row.post_id));
         bookmarkedIds = new Set((bookmarkedRows ?? []).map((row: any) => row.post_id));
+        viewerVotes = new Map((voteRows ?? []).map((row: any) => [row.post_id, row.poll_option_id]));
       }
 
       return rows.map((row: any) => ({
@@ -56,6 +61,21 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
         created_at: row.created_at,
         author: row.author,
         post_media: row.post_media ?? null,
+        poll:
+          row.poll_options && row.poll_options.length > 0
+            ? {
+                options: [...row.poll_options]
+                  .sort((a: any, b: any) => a.display_order - b.display_order)
+                  .map((option: any) => ({
+                    id: option.id,
+                    option_text: option.option_text,
+                    display_order: option.display_order,
+                    vote_count: option.poll_votes?.[0]?.count ?? 0,
+                  })),
+                viewer_vote_option_id: viewerVotes.get(row.id) ?? null,
+              }
+            : null,
+        buy_sell: row.post_buy_sell ?? null,
         like_count: row.likes?.[0]?.count ?? 0,
         comment_count: row.comments?.[0]?.count ?? 0,
         viewer_has_liked: likedIds.has(row.id),
