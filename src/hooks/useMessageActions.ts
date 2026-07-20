@@ -64,6 +64,7 @@ export function useMarkAsRead() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['conversations', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['unread-count', variables.userId] });
     },
   });
 }

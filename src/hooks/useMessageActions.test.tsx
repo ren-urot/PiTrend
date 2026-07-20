@@ -27,6 +27,14 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
+function createWrapper() {
+  const client = new QueryClient();
+  function TestWrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  }
+  return { client, TestWrapper };
+}
+
 describe('useSendMessage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -83,5 +91,20 @@ describe('useMarkAsRead', () => {
     );
     expect(mockEq1).toHaveBeenCalledWith('conversation_id', 'conv-1');
     expect(mockEq2).toHaveBeenCalledWith('user_id', 'user-1');
+  });
+
+  it('invalidates both the conversations list and the nav unread-count badge', async () => {
+    const mockEq2 = vi.fn().mockResolvedValue({ error: null });
+    const mockEq1 = vi.fn(() => ({ eq: mockEq2 }));
+    mockParticipantsUpdate.mockReturnValue({ eq: mockEq1 });
+
+    const { client, TestWrapper } = createWrapper();
+    const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
+
+    const { result } = renderHook(() => useMarkAsRead(), { wrapper: TestWrapper });
+    await waitFor(() => result.current.mutateAsync({ conversationId: 'conv-1', userId: 'user-1' }));
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['conversations', 'user-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['unread-count', 'user-1'] });
   });
 });
