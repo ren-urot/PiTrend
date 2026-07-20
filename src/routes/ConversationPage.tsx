@@ -66,17 +66,27 @@ export function ConversationPage() {
           </div>
         ))}
       </div>
-      <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
-        <Input placeholder="Message…" value={body} onChange={(event) => setBody(event.target.value)} />
-        <input
-          type="file"
-          accept="image/*"
-          aria-label="Photo"
-          onChange={(event) => setMediaFile(event.target.files?.[0])}
-        />
-        <Button type="submit" disabled={sendMessage.isPending}>
-          Send
-        </Button>
+      <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
+        <label className="text-sm">
+          Photo
+          <input
+            type="file"
+            accept="image/*"
+            aria-label="Photo"
+            onChange={(event) => setMediaFile(event.target.files?.[0])}
+          />
+        </label>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Message…"
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            className="min-w-0 flex-1"
+          />
+          <Button type="submit" disabled={sendMessage.isPending} className="shrink-0">
+            Send
+          </Button>
+        </div>
       </form>
     </div>
   );

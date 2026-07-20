@@ -28,14 +28,14 @@ export function MessagesPage() {
             to={`/messages/${conversation.id}`}
             className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{getConversationDisplayName(conversation)}</span>
+            <div className="min-w-0 flex-1 flex flex-col">
+              <span className="truncate font-medium">{getConversationDisplayName(conversation)}</span>
               <span className="truncate text-sm text-muted-foreground">
                 {conversation.lastMessagePreview ?? 'No messages yet'}
               </span>
             </div>
             {conversation.unreadCount > 0 && (
-              <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+              <span className="ml-2 shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
                 {conversation.unreadCount}
               </span>
             )}
