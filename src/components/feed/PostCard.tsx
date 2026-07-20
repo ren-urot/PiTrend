@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToggleLike } from '../../hooks/useToggleLike';
 import { useToggleBookmark } from '../../hooks/useToggleBookmark';
 import { CommentThread } from './CommentThread';
+import { PollOptionRow } from './PollOptionRow';
 import type { Post } from '../../types/post';
 
 export function PostCard({ post }: { post: Post }) {
@@ -33,6 +34,28 @@ export function PostCard({ post }: { post: Post }) {
           alt=""
           className="mb-2 max-h-96 w-full rounded-md object-cover"
         />
+      )}
+
+      {post.post_media && post.post_media.media_type === 'video' && (
+        <video
+          src={post.post_media.media_url}
+          controls
+          className="mb-2 max-h-96 w-full rounded-md"
+        />
+      )}
+
+      {post.buy_sell && (
+        <p className="mb-2 text-sm font-medium">
+          {post.buy_sell.price_currency} {post.buy_sell.price_amount} · {post.buy_sell.category}
+        </p>
+      )}
+
+      {post.poll && (
+        <div className="mb-2 flex flex-col gap-1">
+          {post.poll.options.map((option) => (
+            <PollOptionRow key={option.id} option={option} post={post} />
+          ))}
+        </div>
       )}
 
       <div className="flex gap-4 text-sm text-muted-foreground">
