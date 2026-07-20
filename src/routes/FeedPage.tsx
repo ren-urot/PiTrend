@@ -2,8 +2,10 @@ import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useCities } from '../hooks/useCities';
 import { usePosts } from '../hooks/usePosts';
+import { useQueuedDrafts } from '../hooks/useQueuedDrafts';
 import { PostComposer } from '../components/feed/PostComposer';
 import { PostCard } from '../components/feed/PostCard';
+import { DraftPostCard } from '../components/feed/DraftPostCard';
 import { ComingSoon } from '../components/ComingSoon';
 
 export function FeedPage() {
@@ -15,6 +17,7 @@ export function FeedPage() {
     channelId: null,
     viewerId: session?.user.id,
   });
+  const { data: drafts } = useQueuedDrafts(session?.user.id);
 
   const cityName = cities?.find((city) => city.id === profile?.city_id)?.name;
 
@@ -22,15 +25,22 @@ export function FeedPage() {
     return <ComingSoon title={cityName ? `${cityName} Feed` : 'Feed'} />;
   }
 
+  const ownDrafts = (drafts ?? []).filter(
+    (draft) => draft.cityId === profile.city_id && draft.channelId === null
+  );
+
   return (
     <div className="mx-auto max-w-xl p-4">
       <h1 className="mb-4 text-xl font-semibold">{cityName} Feed</h1>
       <PostComposer cityId={profile.city_id} />
       {isLoading && <p className="text-muted-foreground">Loading posts…</p>}
-      {!isLoading && posts?.length === 0 && (
+      {!isLoading && posts?.length === 0 && ownDrafts.length === 0 && (
         <p className="text-muted-foreground">No posts yet — be the first to post!</p>
       )}
       <div className="flex flex-col gap-4">
+        {ownDrafts.map((draft) => (
+          <DraftPostCard key={draft.id} draft={draft} />
+        ))}
         {posts?.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}

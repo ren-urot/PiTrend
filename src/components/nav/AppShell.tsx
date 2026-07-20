@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { Newspaper, MessageCircle, Store, Rss, User, Hash } from 'lucide-react';
+import { useOfflineSync } from '../../hooks/useOfflineSync';
 
 const tabs = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -38,6 +39,7 @@ function NavItems({ orientation }: { orientation: 'horizontal' | 'vertical' }) {
 }
 
 export function AppShell() {
+  useOfflineSync();
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">

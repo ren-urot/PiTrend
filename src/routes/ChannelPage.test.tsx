@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChannelPage } from './ChannelPage';
 import { useChannels } from '../hooks/useChannels';
 import { usePosts } from '../hooks/usePosts';
+import { useQueuedDrafts } from '../hooks/useQueuedDrafts';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -32,9 +33,15 @@ vi.mock('../hooks/useProfile', () => ({
 
 vi.mock('../hooks/useChannels');
 vi.mock('../hooks/usePosts');
+vi.mock('../hooks/useQueuedDrafts');
 
 const mockUseChannels = vi.mocked(useChannels);
 const mockUsePosts = vi.mocked(usePosts);
+const mockUseQueuedDrafts = vi.mocked(useQueuedDrafts);
+
+beforeEach(() => {
+  mockUseQueuedDrafts.mockReturnValue({ data: [], isLoading: false } as any);
+});
 
 function renderAt(path: string) {
   mockUseChannels.mockReturnValue({
@@ -69,5 +76,27 @@ describe('ChannelPage', () => {
         expect.objectContaining({ channelId: 'ch-1', viewerId: 'user-1' })
       )
     );
+  });
+
+  it('shows a queued draft scoped to this channel above the real posts', async () => {
+    mockUseQueuedDrafts.mockReturnValue({
+      data: [
+        {
+          id: 'draft-1',
+          authorId: 'user-1',
+          cityId: 'city-1',
+          channelId: 'ch-1',
+          postType: 'text',
+          body: 'Channel draft',
+          status: 'queued',
+          lastError: null,
+          createdAt: '2026-01-01T00:00:00Z',
+        },
+      ],
+      isLoading: false,
+    } as any);
+
+    renderAt('/channels/pi-official');
+    await waitFor(() => expect(screen.getByText('Channel draft')).toBeInTheDocument());
   });
 });

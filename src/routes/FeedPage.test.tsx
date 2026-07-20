@@ -5,6 +5,7 @@ import { FeedPage } from './FeedPage';
 import { useProfile } from '../hooks/useProfile';
 import { useCities } from '../hooks/useCities';
 import { usePosts } from '../hooks/usePosts';
+import { useQueuedDrafts } from '../hooks/useQueuedDrafts';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -18,6 +19,7 @@ vi.mock('../hooks/useAuth', () => ({
 vi.mock('../hooks/useProfile');
 vi.mock('../hooks/useCities');
 vi.mock('../hooks/usePosts');
+vi.mock('../hooks/useQueuedDrafts');
 vi.mock('../hooks/useCreatePost', () => ({
   useCreatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
@@ -25,6 +27,7 @@ vi.mock('../hooks/useCreatePost', () => ({
 const mockUseProfile = vi.mocked(useProfile);
 const mockUseCities = vi.mocked(useCities);
 const mockUsePosts = vi.mocked(usePosts);
+const mockUseQueuedDrafts = vi.mocked(useQueuedDrafts);
 
 beforeEach(() => {
   mockUseProfile.mockReturnValue({
@@ -46,6 +49,8 @@ beforeEach(() => {
   } as any);
 
   mockUsePosts.mockReturnValue({ data: [], isLoading: false } as any);
+
+  mockUseQueuedDrafts.mockReturnValue({ data: [], isLoading: false } as any);
 });
 
 function renderPage() {
@@ -97,5 +102,28 @@ describe('FeedPage', () => {
 
     renderPage();
     await waitFor(() => expect(screen.getByText('Hello Cebu!')).toBeInTheDocument());
+  });
+
+  it('shows a queued draft scoped to the current city above the real posts', async () => {
+    mockUseQueuedDrafts.mockReturnValue({
+      data: [
+        {
+          id: 'draft-1',
+          authorId: 'user-1',
+          cityId: 'city-1',
+          channelId: null,
+          postType: 'text',
+          body: 'Still sending',
+          status: 'queued',
+          lastError: null,
+          createdAt: '2026-01-01T00:00:00Z',
+        },
+      ],
+      isLoading: false,
+    } as any);
+
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Still sending')).toBeInTheDocument());
+    expect(screen.getByText('Waiting to send…')).toBeInTheDocument();
   });
 });
