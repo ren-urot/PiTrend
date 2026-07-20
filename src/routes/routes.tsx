@@ -8,6 +8,7 @@ import { FeedPage } from './FeedPage';
 import { ChannelsPage } from './ChannelsPage';
 import { ChannelPage } from './ChannelPage';
 import { MessagesPage } from './MessagesPage';
+import { ConversationPage } from './ConversationPage';
 import { MarketplacePage } from './MarketplacePage';
 import { NewsPage } from './NewsPage';
 import { ProfilePage } from './ProfilePage';
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
           { path: '/channels', element: <ChannelsPage /> },
           { path: '/channels/:slug', element: <ChannelPage /> },
           { path: '/messages', element: <MessagesPage /> },
+          { path: '/messages/:conversationId', element: <ConversationPage /> },
           { path: '/marketplace', element: <MarketplacePage /> },
           { path: '/news', element: <NewsPage /> },
           { path: '/profile', element: <ProfilePage /> },
