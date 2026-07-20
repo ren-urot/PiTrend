@@ -58,7 +58,7 @@ export function ConversationPage() {
         <h1 className="font-display text-xl font-semibold">{conversationName}</h1>
       </div>
       {isLoading && <p className="text-muted-foreground">Loading messages…</p>}
-      <div className="flex flex-col gap-3 pb-4">
+      <div className="flex flex-col gap-3 pb-36 md:pb-24">
         {messages?.map((message) => {
           const isOwn = message.sender_id === session?.user.id;
           return (
@@ -97,7 +97,7 @@ export function ConversationPage() {
       </div>
       <form
         onSubmit={handleSubmit}
-        className="sticky bottom-16 z-10 mt-2 flex flex-col gap-2 rounded-lg border bg-card p-2 shadow-md md:bottom-4"
+        className="fixed inset-x-0 bottom-16 z-10 mx-auto flex max-w-xl flex-col gap-2 rounded-lg border bg-card p-2 px-4 shadow-md md:inset-x-auto md:bottom-4 md:left-56 md:right-0 md:px-4"
       >
         {mediaFile && (
           <div className="flex items-center justify-between rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
