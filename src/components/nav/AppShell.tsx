@@ -1,8 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Newspaper, MessageCircle, Store, Rss, User } from 'lucide-react';
+import { Newspaper, MessageCircle, Store, Rss, User, Hash } from 'lucide-react';
 
 const tabs = [
   { to: '/feed', label: 'Feed', icon: Rss },
+  { to: '/channels', label: 'Channels', icon: Hash },
   { to: '/messages', label: 'Messages', icon: MessageCircle },
   { to: '/marketplace', label: 'Marketplace', icon: Store },
   { to: '/news', label: 'News', icon: Newspaper },

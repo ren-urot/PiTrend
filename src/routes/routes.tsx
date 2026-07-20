@@ -5,6 +5,7 @@ import { ProtectedLayout } from './ProtectedLayout';
 import { SessionOnlyLayout } from './SessionOnlyLayout';
 import { AppShell } from '../components/nav/AppShell';
 import { FeedPage } from './FeedPage';
+import { ChannelsPage } from './ChannelsPage';
 import { MessagesPage } from './MessagesPage';
 import { MarketplacePage } from './MarketplacePage';
 import { NewsPage } from './NewsPage';
@@ -26,6 +27,7 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <Navigate to="/feed" replace /> },
           { path: '/feed', element: <FeedPage /> },
+          { path: '/channels', element: <ChannelsPage /> },
           { path: '/messages', element: <MessagesPage /> },
           { path: '/marketplace', element: <MarketplacePage /> },
           { path: '/news', element: <NewsPage /> },

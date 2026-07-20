@@ -4,7 +4,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from './AppShell';
 
 describe('AppShell', () => {
-  it('renders all five nav tabs and the active route content', () => {
+  it('renders all six nav tabs and the active route content', () => {
     const router = createMemoryRouter(
       [
         {
@@ -18,6 +18,7 @@ describe('AppShell', () => {
     render(<RouterProvider router={router} />);
 
     expect(screen.getAllByText('Feed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Channels').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Messages').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Marketplace').length).toBeGreaterThan(0);
     expect(screen.getAllByText('News').length).toBeGreaterThan(0);
