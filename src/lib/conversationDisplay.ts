@@ -1,7 +1,7 @@
 interface DisplayableConversation {
   is_group: boolean;
   name: string | null;
-  participants: { display_name: string; [key: string]: unknown }[];
+  participants: { display_name: string }[];
 }
 
 export function getConversationDisplayName(conversation: DisplayableConversation): string {

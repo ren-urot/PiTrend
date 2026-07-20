@@ -29,11 +29,7 @@ export function MessagesPage() {
             className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
           >
             <div className="flex flex-col">
-              <span className="font-medium">
-                {getConversationDisplayName(
-                  conversation as unknown as Parameters<typeof getConversationDisplayName>[0]
-                )}
-              </span>
+              <span className="font-medium">{getConversationDisplayName(conversation)}</span>
               <span className="truncate text-sm text-muted-foreground">
                 {conversation.lastMessagePreview ?? 'No messages yet'}
               </span>
