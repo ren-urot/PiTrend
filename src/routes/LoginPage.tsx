@@ -9,6 +9,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
+  const [showCodeEntry, setShowCodeEntry] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'verifying' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -42,17 +43,30 @@ export function LoginPage() {
     // component re-renders into the `session` redirect above.
   }
 
-  if (sent) {
+  // Reachable independent of whether sending an email succeeded — the code
+  // may have come from somewhere other than a link freshly clicked in this
+  // browser (a previous email, or one generated out-of-band), so requiring
+  // a successful send first would make it useless exactly when the send
+  // path is unavailable.
+  if (showCodeEntry || sent) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="text-lg font-semibold">Check your email</p>
+        <p className="text-lg font-semibold">Enter your code</p>
         <p className="text-muted-foreground">
-          We sent a login link to {email}. Click that link, or enter the 6-digit code from that
-          email below — either one logs you in.
+          {sent
+            ? `We sent a login link to ${email}. Click that link, or enter the code from that email below.`
+            : 'Enter the email and code from your login email.'}
         </p>
         <form onSubmit={handleVerifyCode} className="mt-2 flex w-full max-w-sm flex-col gap-3">
           <Input
-            placeholder="6-digit code"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            placeholder="Code from your email"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             required
@@ -62,6 +76,18 @@ export function LoginPage() {
           </Button>
           {status === 'error' && <p className="text-sm text-destructive">{errorMessage}</p>}
         </form>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setShowCodeEntry(false);
+            setSent(false);
+            setStatus('idle');
+            setErrorMessage('');
+          }}
+        >
+          Back
+        </Button>
       </div>
     );
   }
@@ -83,6 +109,9 @@ export function LoginPage() {
         </Button>
         {status === 'error' && <p className="text-sm text-destructive">{errorMessage}</p>}
       </form>
+      <Button type="button" variant="outline" onClick={() => setShowCodeEntry(true)}>
+        Already have a code?
+      </Button>
     </div>
   );
 }
