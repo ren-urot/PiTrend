@@ -24,9 +24,13 @@ const mockUpload = vi.fn().mockResolvedValue({ error: null });
 const mockGetPublicUrl = vi.fn(() => ({
   data: { publicUrl: 'https://example.com/post-media/user-1/post-1.jpg' },
 }));
+const mockGetSession = vi.fn();
 
 vi.mock('./supabase', () => ({
   supabase: {
+    auth: {
+      getSession: () => mockGetSession(),
+    },
     from: (table: string) => {
       if (table === 'post_media') return { insert: mockMediaInsert };
       return { insert: mockPostInsert };
@@ -41,8 +45,10 @@ describe('offlineQueue', () => {
   beforeEach(async () => {
     await db.draftPosts.clear();
     mockPostInsertSingle.mockReset().mockResolvedValue({ data: { id: 'post-1' }, error: null });
+    mockPostInsert.mockClear();
     mockUpload.mockClear();
     mockMediaInsert.mockClear();
+    mockGetSession.mockReset().mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
   });
 
   it('queues a draft post with status queued', async () => {
@@ -133,5 +139,43 @@ describe('offlineQueue', () => {
     const draft = await db.draftPosts.get(id);
     expect(draft?.status).toBe('failed');
     expect(draft?.lastError).toBe('network error');
+  });
+
+  it("skips a draft belonging to a different user, leaving it untouched", async () => {
+    const id = await queueDraftPost({
+      authorId: 'user-2',
+      cityId: 'city-1',
+      channelId: null,
+      postType: 'text',
+      body: 'Not mine',
+    });
+
+    await processQueue();
+
+    expect(mockPostInsert).not.toHaveBeenCalled();
+    const draft = await db.draftPosts.get(id);
+    expect(draft?.status).toBe('queued');
+  });
+
+  it('recovers a stale syncing draft left over from a previous session', async () => {
+    const id = await queueDraftPost({
+      authorId: 'user-1',
+      cityId: 'city-1',
+      channelId: null,
+      postType: 'text',
+      body: 'Stuck mid-sync',
+    });
+    await db.draftPosts.update(id, { status: 'syncing' });
+
+    await processQueue();
+
+    expect(mockPostInsert).toHaveBeenCalledWith({
+      author_id: 'user-1',
+      city_id: 'city-1',
+      channel_id: null,
+      post_type: 'text',
+      body: 'Stuck mid-sync',
+    });
+    expect(await db.draftPosts.get(id)).toBeUndefined();
   });
 });

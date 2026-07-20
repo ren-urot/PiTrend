@@ -36,9 +36,26 @@ export async function processQueue(): Promise<void> {
   if (isProcessing) return;
   isProcessing = true;
   try {
-    const queued = await db.draftPosts.where('status').equals('queued').toArray();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) return;
 
-    for (const draft of queued) {
+    // Include stale 'syncing' drafts so a draft left mid-sync by a crashed or
+    // closed tab in a previous app session gets picked back up here. The
+    // isProcessing guard above already prevents two concurrent processQueue()
+    // calls within this running app from racing on the same draft, so
+    // re-querying 'syncing' is safe — it only ever recovers orphaned state
+    // from a previous session, never a live concurrent one.
+    const pending = await db.draftPosts.where('status').anyOf(['queued', 'syncing']).toArray();
+    // Only sync drafts that belong to whoever is currently logged in. On a
+    // shared device another user's queued/syncing drafts may still be
+    // sitting in the local Dexie store; leave them untouched (don't mark
+    // failed) so they're picked up correctly once their actual owner runs
+    // processQueue().
+    const ownDrafts = pending.filter((draft) => draft.authorId === session.user.id);
+
+    for (const draft of ownDrafts) {
       await db.draftPosts.update(draft.id, { status: 'syncing' });
 
       try {
