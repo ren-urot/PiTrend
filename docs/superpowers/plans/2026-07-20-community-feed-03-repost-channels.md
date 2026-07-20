@@ -16,7 +16,7 @@
 - The channel directory shows global channels (`city_id is null`) plus channels for the viewer's own city — matches the approved design ("Users see all global channels plus channels for their own city").
 - Every task with runtime logic ships with a Vitest test.
 - **Report filenames:** this plan's task numbering restarts at 1, and every earlier plan/phase in this project has already used `task-N-report.md` for unrelated tasks. Use `task-N-report-plan3.md` for every task in this plan, per the convention established in Plan 2.
-- **Risk flagged, not resolved by this plan:** Task 1's self-referential `posts` → `posts` embed (`shared_post:posts!posts_shared_post_id_fkey(...)`) is a different embed shape than anything exercised so far (Plans 1-2 only embedded `posts` → other tables, never `posts` → itself). Sanity-check it against the live Supabase project the same way Plan 2's Task 1 did (a direct REST call or the dashboard API docs page), don't rely on mocked unit tests alone.
+- **Self-referential embed uses the column-name hint, not the constraint-name hint.** Task 1's `posts` → `posts` embed is `shared_post:posts!shared_post_id(...)`, not `shared_post:posts!posts_shared_post_id_fkey(...)` (the constraint-name form used for every other embed in `usePosts.ts`). A live sanity-check against the Supabase REST API found the constraint-name form returns `PGRST200` ("could not find a relationship") for this specific self-referential FK, even though the constraint exists and the column-name form resolves correctly — verified live with the exact shipped select string. If a future plan adds another self-referential embed, use the column-name hint form from the start rather than rediscovering this.
 - **No channels are seeded by this plan.** The `channels` table has zero rows in the live database — this plan ships the UI/hooks, but `ChannelsPage` will show an empty directory until channels are manually seeded (a follow-up manual step, analogous to how `cities` was seeded in Identity & City Communities — not included here since the PRD's example channel list, e.g. "Pi Official", "Pi Developers", "Cebu Community", wasn't part of what was scoped for this plan's brainstorming). Flag this to the user after implementation; don't silently seed channels without asking, since it's a content decision, not a code one.
 
 ---
@@ -171,7 +171,7 @@ describe('usePosts', () => {
         'post_media(media_url, media_type, duration_seconds), ' +
         'poll_options(id, option_text, display_order, poll_votes(count)), ' +
         'post_buy_sell(price_amount, price_currency, category), ' +
-        'shared_post:posts!posts_shared_post_id_fkey(id, post_type, body, ' +
+        'shared_post:posts!shared_post_id(id, post_type, body, ' +
         'author:profiles!posts_author_id_fkey(username, display_name, avatar_url), ' +
         'post_media(media_url, media_type, duration_seconds)), ' +
         'likes(count), comments(count)'
@@ -190,7 +190,7 @@ Expected: FAIL — the current `usePosts.ts` doesn't select or map `shared_post`
 Modify `src/hooks/usePosts.ts` — add this segment to the select string, immediately after the `post_buy_sell(...)` line and before `likes(count), comments(count)`:
 
 ```ts
-            'shared_post:posts!posts_shared_post_id_fkey(id, post_type, body, ' +
+            'shared_post:posts!shared_post_id(id, post_type, body, ' +
               'author:profiles!posts_author_id_fkey(username, display_name, avatar_url), ' +
               'post_media(media_url, media_type, duration_seconds)), ' +
 ```
@@ -210,7 +210,7 @@ Expected: PASS.
 
 - [ ] **Step 6: Sanity-check the self-referential embed against the live database (manual, best-effort)**
 
-Use the Supabase dashboard's API docs page (or a direct `curl` against the REST endpoint, whichever is more convenient) to try a `GET /rest/v1/posts?select=id,shared_post:posts!posts_shared_post_id_fkey(id,body)` call against the live project. Confirm it returns without a PostgREST relationship/schema error (an empty or null-`shared_post` result is fine — there's no repost data yet since `useCreatePost`'s repost path doesn't exist until Task 2). If it errors, stop and report — this embed shape needs reconsidering before later tasks build on it.
+Use the Supabase dashboard's API docs page (or a direct `curl` against the REST endpoint, whichever is more convenient) to try a `GET /rest/v1/posts?select=id,shared_post:posts!shared_post_id(id,body)` call against the live project. Confirm it returns without a PostgREST relationship/schema error (an empty or null-`shared_post` result is fine — there's no repost data yet since `useCreatePost`'s repost path doesn't exist until Task 2). If it errors, stop and report — this embed shape needs reconsidering before later tasks build on it.
 
 - [ ] **Step 7: Run the full suite and the build**
 
