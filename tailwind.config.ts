@@ -19,7 +19,7 @@ export default {
       },
       colors: {
         mesh: {
-          violet: '#6C3CE0',
+          violet: '#8A348E',
           gold: '#E8A93A',
           teal: '#1FA097',
         },

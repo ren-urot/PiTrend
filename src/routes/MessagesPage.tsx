@@ -14,13 +14,13 @@ function EmptyMesh() {
   return (
     <div className="flex flex-col items-center gap-4 py-16 text-center">
       <svg width="120" height="80" viewBox="0 0 120 80" fill="none" aria-hidden="true">
-        <line x1="20" y1="20" x2="60" y2="50" stroke="#6C3CE0" strokeOpacity="0.25" strokeWidth="1.5" strokeDasharray="3 3" />
+        <line x1="20" y1="20" x2="60" y2="50" stroke="#8A348E" strokeOpacity="0.25" strokeWidth="1.5" strokeDasharray="3 3" />
         <line x1="60" y1="50" x2="100" y2="24" stroke="#E8A93A" strokeOpacity="0.3" strokeWidth="1.5" strokeDasharray="3 3" />
         <line x1="60" y1="50" x2="50" y2="70" stroke="#1FA097" strokeOpacity="0.3" strokeWidth="1.5" strokeDasharray="3 3" />
-        <circle cx="20" cy="20" r="6" fill="#6C3CE0" fillOpacity="0.35" />
+        <circle cx="20" cy="20" r="6" fill="#8A348E" fillOpacity="0.35" />
         <circle cx="100" cy="24" r="6" fill="#E8A93A" fillOpacity="0.4" />
         <circle cx="50" cy="70" r="6" fill="#1FA097" fillOpacity="0.4" />
-        <circle cx="60" cy="50" r="8" fill="#6C3CE0" />
+        <circle cx="60" cy="50" r="8" fill="#8A348E" />
       </svg>
       <p className="text-muted-foreground">No conversations yet — start one to join the mesh!</p>
     </div>

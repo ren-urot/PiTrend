@@ -24,7 +24,7 @@ export function NodeAvatar({ name, size = 40, online = false }: NodeAvatarProps)
       <div
         className="h-full w-full rounded-full p-[2px]"
         style={{
-          background: 'conic-gradient(from 200deg, #6C3CE0, #E8A93A, #1FA097, #6C3CE0)',
+          background: 'conic-gradient(from 200deg, #8A348E, #E8A93A, #1FA097, #8A348E)',
         }}
       >
         <div
