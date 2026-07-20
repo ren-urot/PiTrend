@@ -31,7 +31,7 @@ export function FeedPage() {
 
   return (
     <div className="mx-auto max-w-xl p-4">
-      <h1 className="mb-4 text-xl font-semibold">{cityName} Feed</h1>
+      <h1 className="mb-4 text-base font-semibold md:text-xl">{cityName} Feed</h1>
       <PostComposer cityId={profile.city_id} />
       {isLoading && <p className="text-muted-foreground">Loading posts…</p>}
       {!isLoading && posts?.length === 0 && ownDrafts.length === 0 && (

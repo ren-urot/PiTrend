@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { Newspaper, MessageCircle, Store, Rss, User, Hash } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useProfile';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
 import { useUnreadCount } from '../../hooks/useUnreadCount';
+import { NodeAvatar } from '../NodeAvatar';
 
 const tabs = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -50,6 +52,7 @@ function NavItems({ orientation, unreadCount }: { orientation: 'horizontal' | 'v
 export function AppShell() {
   useOfflineSync();
   const { session } = useAuth();
+  const { data: profile } = useProfile(session?.user.id);
   const { data: unreadCount } = useUnreadCount(session?.user.id);
 
   return (
@@ -58,7 +61,13 @@ export function AppShell() {
         <div className="p-4 text-xl font-bold">PiMesh</div>
         <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
+        <span className="font-display text-lg font-bold text-primary">PiMesh</span>
+        <NavLink to="/profile" aria-label="Profile">
+          <NodeAvatar name={profile?.display_name ?? '?'} size={32} />
+        </NavLink>
+      </header>
+      <main className="flex-1 overflow-y-auto pb-16 pt-14 md:pb-0 md:pt-0">
         <Outlet />
       </main>
       <div className="fixed bottom-0 left-0 right-0 md:hidden">

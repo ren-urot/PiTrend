@@ -55,7 +55,7 @@ export function ConversationPage() {
     <div className="mx-auto flex max-w-xl flex-col p-4">
       <div className="mb-4 flex items-center gap-3">
         <NodeAvatar name={conversationName} size={36} />
-        <h1 className="min-w-0 flex-1 truncate font-display text-xl font-semibold">
+        <h1 className="min-w-0 flex-1 truncate font-display text-base font-semibold md:text-xl">
           {conversationName}
         </h1>
       </div>

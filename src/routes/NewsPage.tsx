@@ -7,7 +7,7 @@ export function NewsPage() {
 
   return (
     <div className="mx-auto max-w-xl p-4">
-      <h1 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+      <h1 className="mb-4 flex items-center gap-2 text-base font-semibold md:text-xl">
         <Newspaper size={22} />
         Pi News
       </h1>

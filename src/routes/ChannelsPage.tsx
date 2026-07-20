@@ -20,7 +20,7 @@ export function ChannelsPage() {
 
   return (
     <div className="mx-auto max-w-xl p-4">
-      <h1 className="mb-4 text-xl font-semibold">Channels</h1>
+      <h1 className="mb-4 text-base font-semibold md:text-xl">Channels</h1>
       <div className="flex flex-col gap-2">
         {visibleChannels?.map((channel) => {
           const isSubscribed = subscribedIds?.includes(channel.id) ?? false;

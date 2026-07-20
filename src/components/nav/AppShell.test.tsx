@@ -22,6 +22,21 @@ vi.mock('../../hooks/useAuth', () => ({
   }),
 }));
 
+vi.mock('../../hooks/useProfile', () => ({
+  useProfile: () => ({
+    data: {
+      id: 'user-1',
+      username: 'ren',
+      display_name: 'Ren Urot',
+      avatar_url: null,
+      city_id: 'city-1',
+      reputation_score: 0,
+      created_at: '2026-01-01',
+    },
+    isLoading: false,
+  }),
+}));
+
 vi.mock('../../hooks/useUnreadCount');
 const mockUseUnreadCount = vi.mocked(useUnreadCount);
 
@@ -56,6 +71,16 @@ describe('AppShell', () => {
     expect(screen.getAllByText('News').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Profile').length).toBeGreaterThan(0);
     expect(screen.getByText('Feed content')).toBeInTheDocument();
+  });
+
+  it('shows a mobile header with the PiMesh logo and a link to the profile', () => {
+    mockUseUnreadCount.mockReturnValue({ data: 0 } as any);
+    renderShell();
+
+    expect(screen.getAllByText('PiMesh').length).toBeGreaterThan(0);
+    const profileLinks = screen.getAllByRole('link', { name: 'Profile' });
+    expect(profileLinks.length).toBeGreaterThan(0);
+    profileLinks.forEach((link) => expect(link).toHaveAttribute('href', '/profile'));
   });
 
   it('shows an unread badge on the Messages tab when there are unread messages', () => {

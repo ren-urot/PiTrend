@@ -30,7 +30,7 @@ export function ChannelPage() {
 
   return (
     <div className="mx-auto max-w-xl p-4">
-      <h1 className="mb-4 text-xl font-semibold">{channel.name}</h1>
+      <h1 className="mb-4 text-base font-semibold md:text-xl">{channel.name}</h1>
       {profile?.city_id && <PostComposer cityId={profile.city_id} channelId={channel.id} />}
       {isLoading && <p className="text-muted-foreground">Loading posts…</p>}
       {!isLoading && posts?.length === 0 && ownDrafts.length === 0 && (
