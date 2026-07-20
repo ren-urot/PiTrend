@@ -8,6 +8,6 @@ export function useQueuedDrafts(userId: string | undefined) {
       const drafts = await db.draftPosts.where('authorId').equals(userId || '').toArray();
       return drafts.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     },
-    refetchInterval: 2000,
+    refetchInterval: userId ? 2000 : false,
   });
 }
