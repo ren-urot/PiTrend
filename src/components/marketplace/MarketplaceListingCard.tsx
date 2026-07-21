@@ -40,47 +40,56 @@ export function MarketplaceListingCard({
     navigate(`/messages/${conversationId}`);
   }
 
-  const content = (
-    <>
-      {expanded ? (
-        <div>
-          <div className="flex items-center p-2">
-            <span
-              aria-hidden="true"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-foreground"
-            >
-              <ArrowLeft size={18} />
-            </span>
-          </div>
-          <div className="flex gap-2 overflow-x-auto">
-            {listing.photos.map((photo) => (
-              <img
-                key={photo.id}
-                src={photo.photo_url}
-                alt=""
-                className="aspect-square w-full shrink-0 object-cover"
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        coverPhoto && (
-          <img src={coverPhoto.photo_url} alt="" className="aspect-square w-full object-cover" />
-        )
+  const details = (
+    <CardContent className="p-4">
+      {listing.status === 'sold' && <Badge className="mb-2">Sold</Badge>}
+      <p className="truncate font-medium">{listing.title}</p>
+      <p className="font-semibold text-mesh-teal">
+        {formatListingPrice(listing.price_amount, listing.price_currency)}
+      </p>
+      <p className="text-sm text-muted-foreground">{listing.city_name}</p>
+
+      {expanded && listing.description && (
+        <p className="mt-2 whitespace-pre-wrap text-sm">{listing.description}</p>
       )}
+    </CardContent>
+  );
 
-      <CardContent className="p-4">
-        {listing.status === 'sold' && <Badge className="mb-2">Sold</Badge>}
-        <p className="truncate font-medium">{listing.title}</p>
-        <p className="font-semibold text-mesh-teal">
-          {formatListingPrice(listing.price_amount, listing.price_currency)}
-        </p>
-        <p className="text-sm text-muted-foreground">{listing.city_name}</p>
+  const photos = expanded ? (
+    <div className="flex gap-2 overflow-x-auto">
+      {listing.photos.map((photo) => (
+        <img
+          key={photo.id}
+          src={photo.photo_url}
+          alt=""
+          className="aspect-square w-full shrink-0 object-cover"
+        />
+      ))}
+    </div>
+  ) : (
+    coverPhoto && <img src={coverPhoto.photo_url} alt="" className="aspect-square w-full object-cover" />
+  );
 
-        {expanded && listing.description && (
-          <p className="mt-2 whitespace-pre-wrap text-sm">{listing.description}</p>
-        )}
-      </CardContent>
+  // "Product details" pages (any expanded card) put the details card on top,
+  // photos below — the opposite of the collapsed grid card, which leads
+  // with the cover photo.
+  const content = expanded ? (
+    <>
+      <div className="flex items-center p-2">
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-foreground"
+        >
+          <ArrowLeft size={18} />
+        </span>
+      </div>
+      {details}
+      {photos}
+    </>
+  ) : (
+    <>
+      {photos}
+      {details}
     </>
   );
 
