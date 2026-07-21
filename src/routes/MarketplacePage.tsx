@@ -87,22 +87,19 @@ export function MarketplacePage() {
         </DropdownMenu>
       </div>
 
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Today's picks</h2>
-        <div className="flex gap-1">
-          {(Object.keys(SCOPE_LABELS) as MarketplaceScope[]).map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setScope(value)}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                scope === value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {SCOPE_LABELS[value]}
-            </button>
-          ))}
-        </div>
+      <div className="mb-4 flex gap-1">
+        {(Object.keys(SCOPE_LABELS) as MarketplaceScope[]).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setScope(value)}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              scope === value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {SCOPE_LABELS[value]}
+          </button>
+        ))}
       </div>
 
       {isLoading && <p className="text-muted-foreground">Loading listings…</p>}
@@ -110,7 +107,7 @@ export function MarketplacePage() {
         <p className="text-muted-foreground">No listings yet.</p>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {listings?.map((listing) => (
           <MarketplaceListingCard
             key={listing.id}
