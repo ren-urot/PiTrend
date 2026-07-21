@@ -3,9 +3,24 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NewsPage } from './NewsPage';
 import { useNews } from '../hooks/useNews';
+import { useNewsComments } from '../hooks/useNewsComments';
+import { useCreateNewsComment } from '../hooks/useCreateNewsComment';
 
 vi.mock('../hooks/useNews');
+vi.mock('../hooks/useNewsComments');
+vi.mock('../hooks/useCreateNewsComment');
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    session: { user: { id: 'user-1' } },
+    loading: false,
+    signInWithEmail: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 const mockUseNews = vi.mocked(useNews);
+const mockUseNewsComments = vi.mocked(useNewsComments);
+const mockUseCreateNewsComment = vi.mocked(useCreateNewsComment);
 
 const piArticle = {
   id: 'a1',
@@ -39,6 +54,8 @@ function mockByCategory() {
 describe('NewsPage', () => {
   beforeEach(() => {
     mockByCategory();
+    mockUseNewsComments.mockReturnValue({ data: [], isLoading: false } as any);
+    mockUseCreateNewsComment.mockReturnValue({ mutateAsync: vi.fn() } as any);
   });
 
   it('shows Pi News by default', () => {
@@ -70,6 +87,30 @@ describe('NewsPage', () => {
       'href',
       'https://crypto.news/example'
     );
+  });
+
+  it('toggles the comment thread when Comment is clicked', async () => {
+    mockUseNewsComments.mockReturnValue({
+      data: [
+        {
+          id: 'nc1',
+          article_id: 'a1',
+          author_id: 'user-1',
+          parent_comment_id: null,
+          body: 'Great read!',
+          created_at: '2026-01-01T00:00:00Z',
+          author: { username: 'renz', display_name: 'Ren', avatar_url: null },
+        },
+      ],
+      isLoading: false,
+    } as any);
+
+    render(<NewsPage />);
+    const user = userEvent.setup();
+
+    expect(screen.queryByText('Great read!')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Comment/ }));
+    expect(screen.getByText('Great read!')).toBeInTheDocument();
   });
 
   describe('sharing an article', () => {
