@@ -23,7 +23,12 @@ export function unlockNotificationAudio(): void {
   }
 }
 
-/** A short two-note chime, synthesized so no audio asset needs to ship. */
+/**
+ * A four-note "ring-ring" alert, synthesized so no audio asset needs to
+ * ship. Louder and brighter (triangle wave) than a single soft chime, and
+ * repeats the two-tone pattern twice so it reads as an actual ring rather
+ * than a quiet blip that's easy to miss.
+ */
 export function playNotificationSound(): void {
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -32,20 +37,21 @@ export function playNotificationSound(): void {
   }
 
   const now = ctx.currentTime;
-  [880, 1320].forEach((frequency, index) => {
+  const notes = [880, 1320, 880, 1320];
+  notes.forEach((frequency, index) => {
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
-    oscillator.type = 'sine';
+    oscillator.type = 'triangle';
     oscillator.frequency.value = frequency;
 
-    const start = now + index * 0.09;
+    const start = now + index * 0.16;
     gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(0.15, start + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
+    gain.gain.linearRampToValueAtTime(0.4, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
 
     oscillator.connect(gain);
     gain.connect(ctx.destination);
     oscillator.start(start);
-    oscillator.stop(start + 0.2);
+    oscillator.stop(start + 0.24);
   });
 }

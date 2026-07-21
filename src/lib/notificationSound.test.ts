@@ -45,13 +45,13 @@ describe('playNotificationSound', () => {
     (globalThis as { AudioContext?: unknown }).AudioContext = makeMockAudioContextClass('running');
   });
 
-  it('creates and starts two oscillators for the chime', () => {
+  it('creates and starts four oscillators for the ring pattern', () => {
     playNotificationSound();
 
-    expect(mockStart).toHaveBeenCalledTimes(2);
-    expect(mockStop).toHaveBeenCalledTimes(2);
-    expect(mockOscillatorConnect).toHaveBeenCalledTimes(2);
-    expect(mockGainConnect).toHaveBeenCalledTimes(2);
+    expect(mockStart).toHaveBeenCalledTimes(4);
+    expect(mockStop).toHaveBeenCalledTimes(4);
+    expect(mockOscillatorConnect).toHaveBeenCalledTimes(4);
+    expect(mockGainConnect).toHaveBeenCalledTimes(4);
   });
 
   it('does nothing when AudioContext is unavailable', async () => {
