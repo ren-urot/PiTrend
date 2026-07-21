@@ -60,12 +60,12 @@ export function AppShell() {
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
         <div className="p-4">
-          <img src={piTrendLogo} alt="Pi Trend" className="h-8 w-auto" />
+          <img src={piTrendLogo} alt="Pi Trend" className="h-16 w-auto" />
         </div>
         <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <img src={piTrendLogo} alt="Pi Trend" className="h-6 w-auto" />
+        <img src={piTrendLogo} alt="Pi Trend" className="h-12 w-auto" />
         <NavLink to="/profile" aria-label="Profile">
           <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
         </NavLink>
