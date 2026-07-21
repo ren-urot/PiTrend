@@ -60,7 +60,7 @@ export function AppShell() {
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
         <div className="flex items-center justify-between p-4">
-          <img src={piTrendLogo} alt="Pi Trend" className="h-16 w-auto" />
+          <img src={piTrendLogo} alt="Pi Trend" className="h-[44.8px] w-auto" />
           <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
             <Search size={22} />
           </NavLink>
@@ -71,7 +71,7 @@ export function AppShell() {
         <NavLink to="/profile" aria-label="Profile">
           <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
         </NavLink>
-        <img src={piTrendLogo} alt="Pi Trend" className="absolute left-1/2 h-12 w-auto -translate-x-1/2" />
+        <img src={piTrendLogo} alt="Pi Trend" className="absolute left-1/2 h-[33.6px] w-auto -translate-x-1/2" />
         <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
           <Search size={22} />
         </NavLink>
