@@ -83,6 +83,15 @@ describe('AppShell', () => {
     profileLinks.forEach((link) => expect(link).toHaveAttribute('href', '/profile'));
   });
 
+  it('shows a Search link in both the sidebar and mobile header', () => {
+    mockUseUnreadCount.mockReturnValue({ data: 0 } as any);
+    renderShell();
+
+    const searchLinks = screen.getAllByRole('link', { name: 'Search' });
+    expect(searchLinks.length).toBeGreaterThan(0);
+    searchLinks.forEach((link) => expect(link).toHaveAttribute('href', '/search'));
+  });
+
   it('shows an unread badge on the Messages tab when there are unread messages', () => {
     mockUseUnreadCount.mockReturnValue({ data: 3 } as any);
     renderShell();

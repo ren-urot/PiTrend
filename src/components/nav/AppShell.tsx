@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Newspaper, MessageCircle, Store, Rss, User, Hash } from 'lucide-react';
+import { Newspaper, MessageCircle, Store, Rss, User, Hash, Search } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
@@ -59,16 +59,24 @@ export function AppShell() {
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
-        <div className="p-4">
+        <div className="flex items-center justify-between p-4">
           <img src={piTrendLogo} alt="Pi Trend" className="h-16 w-auto" />
+          <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
+            <Search size={22} />
+          </NavLink>
         </div>
         <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
         <img src={piTrendLogo} alt="Pi Trend" className="h-12 w-auto" />
-        <NavLink to="/profile" aria-label="Profile">
-          <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
-        </NavLink>
+        <div className="flex items-center gap-4">
+          <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
+            <Search size={22} />
+          </NavLink>
+          <NavLink to="/profile" aria-label="Profile">
+            <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
+          </NavLink>
+        </div>
       </header>
       <main className="flex-1 overflow-y-auto pb-16 pt-14 md:pb-0 md:pt-0">
         <Outlet />

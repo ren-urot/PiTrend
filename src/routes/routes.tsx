@@ -13,6 +13,7 @@ import { MarketplacePage } from './MarketplacePage';
 import { NewsPage } from './NewsPage';
 import { ProfilePage } from './ProfilePage';
 import { PublicProfilePage } from './PublicProfilePage';
+import { SearchPage } from './SearchPage';
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
@@ -36,6 +37,7 @@ export const routes: RouteObject[] = [
           { path: '/marketplace', element: <MarketplacePage /> },
           { path: '/news', element: <NewsPage /> },
           { path: '/profile', element: <ProfilePage /> },
+          { path: '/search', element: <SearchPage /> },
         ],
       },
     ],
