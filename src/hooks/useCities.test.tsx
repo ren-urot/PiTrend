@@ -22,8 +22,8 @@ describe('useCities', () => {
   it('returns cities ordered by name', async () => {
     mockOrder.mockResolvedValue({
       data: [
-        { id: 'c1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' },
-        { id: 'c2', name: 'Manila', slug: 'manila', country: 'Philippines' },
+        { id: 'c1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines', island_group: 'visayas' },
+        { id: 'c2', name: 'Manila', slug: 'manila', country: 'Philippines', island_group: 'luzon' },
       ],
       error: null,
     });
@@ -32,7 +32,7 @@ describe('useCities', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toHaveLength(2);
-    expect(mockSelect).toHaveBeenCalledWith('id, name, slug, country');
+    expect(mockSelect).toHaveBeenCalledWith('id, name, slug, country, island_group');
     expect(mockOrder).toHaveBeenCalledWith('name', { ascending: true });
   });
 });

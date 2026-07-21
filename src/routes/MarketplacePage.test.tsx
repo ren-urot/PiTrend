@@ -74,7 +74,7 @@ describe('MarketplacePage', () => {
       },
     } as any);
     mockUseCities.mockReturnValue({
-      data: [{ id: 'city-1', name: 'Liloan', slug: 'liloan', country: 'Philippines' }],
+      data: [{ id: 'city-1', name: 'Liloan', slug: 'liloan', country: 'Philippines', island_group: 'visayas' }],
     } as any);
     mockUseMarketplaceListings.mockReturnValue({ data: [listing], isLoading: false } as any);
     mockUseCreateConversation.mockReturnValue({ mutateAsync: vi.fn() } as any);

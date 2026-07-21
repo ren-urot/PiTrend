@@ -8,7 +8,7 @@ export function useCities() {
     queryFn: async (): Promise<City[]> => {
       const { data, error } = await supabase
         .from('cities')
-        .select('id, name, slug, country')
+        .select('id, name, slug, country, island_group')
         .order('name', { ascending: true });
       if (error) throw error;
       return data ?? [];

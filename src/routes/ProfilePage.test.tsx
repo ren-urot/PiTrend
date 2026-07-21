@@ -31,8 +31,8 @@ beforeEach(() => {
 vi.mock('../hooks/useCities', () => ({
   useCities: () => ({
     data: [
-      { id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' },
-      { id: 'city-2', name: 'Manila', slug: 'manila', country: 'Philippines' },
+      { id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines', island_group: 'visayas' },
+      { id: 'city-2', name: 'Manila', slug: 'manila', country: 'Philippines', island_group: 'luzon' },
     ],
     isLoading: false,
   }),

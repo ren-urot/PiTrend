@@ -28,8 +28,8 @@ describe('CreateListingDialog', () => {
     vi.clearAllMocks();
     mockUseCities.mockReturnValue({
       data: [
-        { id: 'city-1', name: 'Liloan', slug: 'liloan', country: 'Philippines' },
-        { id: 'city-2', name: 'Talisay', slug: 'talisay', country: 'Philippines' },
+        { id: 'city-1', name: 'Liloan', slug: 'liloan', country: 'Philippines', island_group: 'visayas' },
+        { id: 'city-2', name: 'Talisay', slug: 'talisay', country: 'Philippines', island_group: 'visayas' },
       ],
     } as any);
   });

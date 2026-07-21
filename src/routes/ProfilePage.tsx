@@ -9,10 +9,13 @@ import { useCities } from '../hooks/useCities';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useUpdateAvatar } from '../hooks/useUpdateAvatar';
 import { NodeAvatar } from '../components/NodeAvatar';
+import { groupCitiesByIslandGroup, ISLAND_GROUP_LABELS } from '../lib/cityDisplay';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -112,10 +115,15 @@ export function ProfilePage() {
             <SelectValue placeholder="Change city" />
           </SelectTrigger>
           <SelectContent>
-            {cities?.map((city) => (
-              <SelectItem key={city.id} value={city.id}>
-                {city.name}
-              </SelectItem>
+            {groupCitiesByIslandGroup(cities ?? []).map(({ group, cities: groupCities }) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{ISLAND_GROUP_LABELS[group]}</SelectLabel>
+                {groupCities.map((city) => (
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>

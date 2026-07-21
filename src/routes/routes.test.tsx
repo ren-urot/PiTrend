@@ -17,7 +17,7 @@ let currentProfile: {
   created_at: string;
 } | null = null;
 
-const mockCities = [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' }];
+const mockCities = [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines', island_group: 'visayas' }];
 
 vi.mock('../lib/supabase', () => ({
   supabase: {

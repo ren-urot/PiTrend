@@ -44,7 +44,7 @@ beforeEach(() => {
   } as any);
 
   mockUseCities.mockReturnValue({
-    data: [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' }],
+    data: [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines', island_group: 'visayas' }],
     isLoading: false,
   } as any);
 

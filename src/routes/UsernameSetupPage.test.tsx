@@ -18,7 +18,7 @@ vi.mock('../hooks/useAuth', () => ({
 
 vi.mock('../hooks/useCities', () => ({
   useCities: () => ({
-    data: [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines' }],
+    data: [{ id: 'city-1', name: 'Cebu City', slug: 'cebu-city', country: 'Philippines', island_group: 'visayas' }],
     isLoading: false,
   }),
 }));
