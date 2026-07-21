@@ -1,10 +1,13 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Newspaper, MessageCircle, Store, Rss, User, Hash, Search } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
 import { useUnreadCount } from '../../hooks/useUnreadCount';
+import { unlockNotificationAudio } from '../../lib/notificationSound';
 import { NodeAvatar } from '../NodeAvatar';
+import { InstallPwaBanner } from '../InstallPwaBanner';
 import piTrendLogo from '../../assets/pi-trend-logo.svg';
 
 const tabs = [
@@ -60,6 +63,20 @@ export function AppShell() {
   const { data: profile } = useProfile(session?.user.id);
   const { data: unreadCount } = useUnreadCount(session?.user.id);
 
+  useEffect(() => {
+    function handleFirstInteraction() {
+      unlockNotificationAudio();
+      document.removeEventListener('pointerdown', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    }
+    document.addEventListener('pointerdown', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+    return () => {
+      document.removeEventListener('pointerdown', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
@@ -86,6 +103,7 @@ export function AppShell() {
       <div className="fixed bottom-0 left-0 right-0 md:hidden">
         <NavItems orientation="horizontal" unreadCount={unreadCount ?? 0} />
       </div>
+      <InstallPwaBanner />
     </div>
   );
 }

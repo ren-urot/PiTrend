@@ -4,6 +4,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppShell } from './AppShell';
 import { useUnreadCount } from '../../hooks/useUnreadCount';
+import { unlockNotificationAudio } from '../../lib/notificationSound';
 
 vi.mock('../../hooks/useOnlineStatus', () => ({
   useOnlineStatus: () => false,
@@ -39,6 +40,11 @@ vi.mock('../../hooks/useProfile', () => ({
 
 vi.mock('../../hooks/useUnreadCount');
 const mockUseUnreadCount = vi.mocked(useUnreadCount);
+
+vi.mock('../../lib/notificationSound', () => ({
+  unlockNotificationAudio: vi.fn(),
+}));
+const mockUnlockNotificationAudio = vi.mocked(unlockNotificationAudio);
 
 function renderShell() {
   const router = createMemoryRouter(
@@ -100,6 +106,18 @@ describe('AppShell', () => {
     const searchLinks = screen.getAllByRole('link', { name: 'Search' });
     expect(searchLinks.length).toBeGreaterThan(0);
     searchLinks.forEach((link) => expect(link).toHaveAttribute('href', '/search'));
+  });
+
+  it("unlocks notification audio on the user's first interaction", () => {
+    mockUseUnreadCount.mockReturnValue({ data: 0 } as any);
+    renderShell();
+
+    expect(mockUnlockNotificationAudio).not.toHaveBeenCalled();
+    document.dispatchEvent(new Event('pointerdown'));
+    expect(mockUnlockNotificationAudio).toHaveBeenCalledTimes(1);
+
+    document.dispatchEvent(new Event('pointerdown'));
+    expect(mockUnlockNotificationAudio).toHaveBeenCalledTimes(1);
   });
 
   it('shows an unread badge on the Messages tab when there are unread messages', () => {
