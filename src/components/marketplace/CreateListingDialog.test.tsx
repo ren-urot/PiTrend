@@ -62,7 +62,7 @@ describe('CreateListingDialog', () => {
   it('shows an error message when creating the listing fails', async () => {
     const mutateAsync = vi.fn().mockRejectedValue(new Error('nope'));
     mockUseCreateListing.mockReturnValue({ mutateAsync, isPending: false } as any);
-    renderDialog();
+    const { onOpenChange } = renderDialog();
 
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText('Title'), 'Headphones');
@@ -74,5 +74,6 @@ describe('CreateListingDialog', () => {
         screen.getByText("Couldn't create your listing. Please try again.")
       ).toBeInTheDocument()
     );
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });
