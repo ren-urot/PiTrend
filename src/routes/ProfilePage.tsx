@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useCities } from '../hooks/useCities';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { useUpdateAvatar } from '../hooks/useUpdateAvatar';
+import { NodeAvatar } from '../components/NodeAvatar';
 import {
   Select,
   SelectContent,
@@ -20,8 +23,11 @@ export function ProfilePage() {
   const { data: cities } = useCities();
   const isOnline = useOnlineStatus();
   const queryClient = useQueryClient();
+  const updateAvatar = useUpdateAvatar();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [updatingCity, setUpdatingCity] = useState(false);
   const [cityError, setCityError] = useState('');
+  const [avatarError, setAvatarError] = useState('');
 
   if (authLoading || profileLoading) {
     return <div className="p-6">Loading profile…</div>;
@@ -60,19 +66,42 @@ export function ProfilePage() {
     setUpdatingCity(false);
   }
 
+  async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !session) return;
+
+    setAvatarError('');
+    try {
+      await updateAvatar.mutateAsync({ userId: session.user.id, file });
+    } catch {
+      setAvatarError("Couldn't update your photo. Please try again.");
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-4 p-6">
-      {profile.avatar_url ? (
-        <img
-          src={profile.avatar_url}
-          alt={profile.display_name}
-          className="h-24 w-24 rounded-full object-cover"
+      <div className="relative">
+        <NodeAvatar name={profile.display_name} avatarUrl={profile.avatar_url} size={96} />
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          aria-label="Change profile photo"
+          className="hidden"
+          onChange={handleAvatarChange}
         />
-      ) : (
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted text-2xl">
-          {profile.display_name.charAt(0).toUpperCase()}
-        </div>
-      )}
+        <button
+          type="button"
+          aria-label="Edit profile photo"
+          disabled={updateAvatar.isPending}
+          className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground disabled:opacity-50"
+          onClick={() => avatarInputRef.current?.click()}
+        >
+          <Camera size={16} />
+        </button>
+      </div>
+      {avatarError && <p className="text-sm text-destructive">{avatarError}</p>}
       <div className="text-center">
         <p className="text-lg font-semibold">{profile.display_name}</p>
         <p className="text-muted-foreground">@{profile.username}</p>

@@ -12,3 +12,17 @@ export function getConversationDisplayName(conversation: DisplayableConversation
   if (names.length <= 3) return names.join(', ');
   return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`;
 }
+
+interface DisplayableConversationAvatar {
+  is_group: boolean;
+  participants: { avatar_url: string | null }[];
+}
+
+/**
+ * A group has no single photo to show, so this only ever returns a photo
+ * for a 1:1 conversation (the other participant's), never a group's.
+ */
+export function getConversationAvatarUrl(conversation: DisplayableConversationAvatar): string | null {
+  if (conversation.is_group) return null;
+  return conversation.participants[0]?.avatar_url ?? null;
+}

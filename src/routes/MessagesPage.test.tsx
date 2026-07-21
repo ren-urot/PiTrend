@@ -61,6 +61,30 @@ describe('MessagesPage', () => {
     expect(screen.getByRole('link', { name: /Bob/ })).toHaveAttribute('href', '/messages/conv-1');
   });
 
+  it("shows the other participant's photo for a 1:1 conversation", () => {
+    mockUseConversations.mockReturnValue({
+      data: [
+        {
+          id: 'conv-1',
+          is_group: false,
+          name: null,
+          created_at: '2026-01-01T00:00:00Z',
+          participants: [
+            { user_id: 'user-2', username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' },
+          ],
+          lastMessagePreview: 'Hey there',
+          lastMessageAt: '2026-01-02T00:00:00Z',
+          unreadCount: 0,
+          lastReadAt: '2026-01-01T00:00:00Z',
+        },
+      ],
+      isLoading: false,
+    } as any);
+    renderPage();
+
+    expect(screen.getByRole('img', { name: 'Bob' })).toHaveAttribute('src', 'https://example.com/bob.jpg');
+  });
+
   it('does not show a badge for a conversation with no unread messages', () => {
     mockUseConversations.mockReturnValue({
       data: [

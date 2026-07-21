@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getConversationDisplayName } from './conversationDisplay';
+import { getConversationDisplayName, getConversationAvatarUrl } from './conversationDisplay';
 
 // Participant fixtures carry extra fields (user_id, username) beyond what
 // DisplayableConversation's participants type requires (display_name only),
@@ -53,5 +53,36 @@ describe('getConversationDisplayName', () => {
   it('falls back to "Conversation" when there are no other participants', () => {
     const name = getConversationDisplayName({ is_group: false, name: null, participants: [] });
     expect(name).toBe('Conversation');
+  });
+});
+
+describe('getConversationAvatarUrl', () => {
+  it("returns the other participant's photo for a 1:1 conversation", () => {
+    const url = getConversationAvatarUrl({
+      is_group: false,
+      participants: [{ avatar_url: 'https://example.com/bob.jpg' }],
+    });
+    expect(url).toBe('https://example.com/bob.jpg');
+  });
+
+  it('returns null for a 1:1 conversation when the other participant has no photo', () => {
+    const url = getConversationAvatarUrl({
+      is_group: false,
+      participants: [{ avatar_url: null }],
+    });
+    expect(url).toBeNull();
+  });
+
+  it('returns null for a group, even if a member has a photo', () => {
+    const url = getConversationAvatarUrl({
+      is_group: true,
+      participants: [{ avatar_url: 'https://example.com/bob.jpg' }],
+    });
+    expect(url).toBeNull();
+  });
+
+  it('returns null when there are no other participants', () => {
+    const url = getConversationAvatarUrl({ is_group: false, participants: [] });
+    expect(url).toBeNull();
   });
 });

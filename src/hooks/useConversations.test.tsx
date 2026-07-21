@@ -56,8 +56,8 @@ describe('useConversations', () => {
             name: null,
             created_at: '2026-01-01T00:00:00Z',
             conversation_participants: [
-              { user_id: 'user-1', last_read_at: '2026-01-01T00:00:00Z', profiles: { username: 'me', display_name: 'Me' } },
-              { user_id: 'user-2', last_read_at: '2026-01-01T00:00:00Z', profiles: { username: 'bob', display_name: 'Bob' } },
+              { user_id: 'user-1', last_read_at: '2026-01-01T00:00:00Z', profiles: { username: 'me', display_name: 'Me', avatar_url: null } },
+              { user_id: 'user-2', last_read_at: '2026-01-01T00:00:00Z', profiles: { username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' } },
             ],
           },
         ],
@@ -89,7 +89,9 @@ describe('useConversations', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toHaveLength(1);
     const summary = result.current.data![0];
-    expect(summary.participants).toEqual([{ user_id: 'user-2', username: 'bob', display_name: 'Bob' }]);
+    expect(summary.participants).toEqual([
+      { user_id: 'user-2', username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' },
+    ]);
     expect(summary.lastMessagePreview).toBe('Hey there');
     expect(summary.unreadCount).toBe(1);
   });
@@ -152,8 +154,8 @@ describe('useConversation', () => {
             name: null,
             created_at: '2026-01-01T00:00:00Z',
             conversation_participants: [
-              { user_id: 'user-1', profiles: { username: 'me', display_name: 'Me' } },
-              { user_id: 'user-2', profiles: { username: 'bob', display_name: 'Bob' } },
+              { user_id: 'user-1', profiles: { username: 'me', display_name: 'Me', avatar_url: null } },
+              { user_id: 'user-2', profiles: { username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' } },
             ],
           },
           error: null,
@@ -171,7 +173,7 @@ describe('useConversation', () => {
       is_group: false,
       name: null,
       created_at: '2026-01-01T00:00:00Z',
-      participants: [{ user_id: 'user-2', username: 'bob', display_name: 'Bob' }],
+      participants: [{ user_id: 'user-2', username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' }],
     });
   });
 });

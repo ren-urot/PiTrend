@@ -11,6 +11,8 @@ const mockUseAuth = vi.mocked(useAuth);
 
 const mockEq = vi.fn().mockResolvedValue({ error: null });
 const mockUpdate = vi.fn(() => ({ eq: mockEq }));
+const mockAvatarUpload = vi.fn().mockResolvedValue({ error: null });
+const mockGetPublicUrl = vi.fn((path: string) => ({ data: { publicUrl: `https://cdn.example.com/${path}` } }));
 
 beforeEach(() => {
   mockUseAuth.mockReturnValue({
@@ -22,6 +24,8 @@ beforeEach(() => {
   });
   mockEq.mockClear();
   mockUpdate.mockClear();
+  mockAvatarUpload.mockClear().mockResolvedValue({ error: null });
+  mockGetPublicUrl.mockClear();
 });
 
 vi.mock('../hooks/useCities', () => ({
@@ -56,6 +60,9 @@ vi.mock('../lib/supabase', () => ({
       }),
       update: mockUpdate,
     }),
+    storage: {
+      from: () => ({ upload: mockAvatarUpload, getPublicUrl: mockGetPublicUrl }),
+    },
   },
 }));
 
@@ -117,5 +124,35 @@ describe('ProfilePage', () => {
       expect(screen.getByText("Couldn't update your city. Please try again.")).toBeInTheDocument()
     );
     expect(screen.getByText('Cebu City')).toBeInTheDocument();
+  });
+
+  it('uploads a new profile photo when one is selected', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    const file = new File(['fake'], 'photo.jpg', { type: 'image/jpeg' });
+    await user.upload(screen.getByLabelText('Change profile photo'), file);
+
+    await waitFor(() =>
+      expect(mockAvatarUpload).toHaveBeenCalledWith('user-1/avatar.jpg', file, { upsert: true })
+    );
+    expect(mockUpdate).toHaveBeenCalledWith({
+      avatar_url: expect.stringMatching(/^https:\/\/cdn\.example\.com\/user-1\/avatar\.jpg\?t=\d+$/),
+    });
+  });
+
+  it('shows an error message when the photo upload fails', async () => {
+    mockAvatarUpload.mockResolvedValueOnce({ error: new Error('upload failed') });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    const file = new File(['fake'], 'photo.jpg', { type: 'image/jpeg' });
+    await user.upload(screen.getByLabelText('Change profile photo'), file);
+
+    await waitFor(() =>
+      expect(screen.getByText("Couldn't update your photo. Please try again.")).toBeInTheDocument()
+    );
   });
 });

@@ -58,6 +58,33 @@ describe('ConversationPage', () => {
     await waitFor(() => expect(screen.getByText('Bob')).toBeInTheDocument());
   });
 
+  it("shows the other participant's photo in the header and next to their messages", async () => {
+    mockUseConversation.mockReturnValue({
+      data: {
+        id: 'conv-1',
+        is_group: false,
+        name: null,
+        created_at: '2026-01-01T00:00:00Z',
+        participants: [
+          { user_id: 'user-2', username: 'bob', display_name: 'Bob', avatar_url: 'https://example.com/bob.jpg' },
+        ],
+      },
+      isLoading: false,
+    } as any);
+    mockUseMessages.mockReturnValue({
+      data: [
+        { id: 'm1', conversation_id: 'conv-1', sender_id: 'user-2', body: 'Hey', media_url: null, created_at: '2026-01-01T00:00:00Z' },
+      ],
+      isLoading: false,
+    } as any);
+    renderAt('/messages/conv-1');
+
+    await waitFor(() => expect(screen.getByText('Hey')).toBeInTheDocument());
+    const bobPhotos = screen.getAllByRole('img', { name: 'Bob' });
+    expect(bobPhotos.length).toBeGreaterThanOrEqual(2);
+    bobPhotos.forEach((img) => expect(img).toHaveAttribute('src', 'https://example.com/bob.jpg'));
+  });
+
   it("labels messages from other participants with their name, but not the viewer's own", async () => {
     mockUseMessages.mockReturnValue({
       data: [

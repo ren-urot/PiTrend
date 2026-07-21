@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageCirclePlus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useConversations } from '../hooks/useConversations';
-import { getConversationDisplayName } from '../lib/conversationDisplay';
+import { getConversationDisplayName, getConversationAvatarUrl } from '../lib/conversationDisplay';
 import { NewMessageDialog } from '../components/messages/NewMessageDialog';
 import { NodeAvatar } from '../components/NodeAvatar';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,11 @@ export function MessagesPage() {
         {conversations?.map((conversation) => (
           <Link key={conversation.id} to={`/messages/${conversation.id}`}>
             <Card className="flex flex-row items-center gap-3 p-3 transition-colors hover:bg-accent">
-              <NodeAvatar name={getConversationDisplayName(conversation)} size={40} />
+              <NodeAvatar
+                name={getConversationDisplayName(conversation)}
+                avatarUrl={getConversationAvatarUrl(conversation)}
+                size={40}
+              />
               <div className="min-w-0 flex-1 flex flex-col">
                 <span className="truncate font-display font-medium">
                   {getConversationDisplayName(conversation)}

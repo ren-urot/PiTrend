@@ -6,7 +6,7 @@ import type { ConversationDetail, ConversationSummary } from '../types/conversat
 interface RawParticipantEmbed {
   user_id: string;
   last_read_at: string;
-  profiles: { username: string; display_name: string } | null;
+  profiles: { username: string; display_name: string; avatar_url: string | null } | null;
 }
 
 interface RawConversationRow {
@@ -64,7 +64,7 @@ export function useConversations(userId: string | undefined) {
         .from('conversations')
         .select(
           'id, is_group, name, created_at, ' +
-            'conversation_participants(user_id, last_read_at, profiles!conversation_participants_user_id_fkey(username, display_name))'
+            'conversation_participants(user_id, last_read_at, profiles!conversation_participants_user_id_fkey(username, display_name, avatar_url))'
         )
         .in('id', conversationIds);
       if (conversationsError) throw conversationsError;
@@ -103,6 +103,7 @@ export function useConversations(userId: string | undefined) {
                 user_id: participant.user_id,
                 username: participant.profiles!.username,
                 display_name: participant.profiles!.display_name,
+                avatar_url: participant.profiles!.avatar_url,
               })),
             lastMessagePreview: lastMessage ? (lastMessage.body ?? '📷 Photo') : null,
             lastMessageAt: lastMessage?.created_at ?? null,
@@ -125,7 +126,7 @@ export function useConversation(conversationId: string | undefined, currentUserI
         .from('conversations')
         .select(
           'id, is_group, name, created_at, ' +
-            'conversation_participants(user_id, profiles!conversation_participants_user_id_fkey(username, display_name))'
+            'conversation_participants(user_id, profiles!conversation_participants_user_id_fkey(username, display_name, avatar_url))'
         )
         .eq('id', conversationId)
         .single();
@@ -136,7 +137,10 @@ export function useConversation(conversationId: string | undefined, currentUserI
         is_group: boolean;
         name: string | null;
         created_at: string;
-        conversation_participants: { user_id: string; profiles: { username: string; display_name: string } | null }[];
+        conversation_participants: {
+          user_id: string;
+          profiles: { username: string; display_name: string; avatar_url: string | null } | null;
+        }[];
       };
 
       return {
@@ -150,6 +154,7 @@ export function useConversation(conversationId: string | undefined, currentUserI
             user_id: participant.user_id,
             username: participant.profiles!.username,
             display_name: participant.profiles!.display_name,
+            avatar_url: participant.profiles!.avatar_url,
           })),
       };
     },

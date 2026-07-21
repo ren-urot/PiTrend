@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useMessages } from '../hooks/useMessages';
 import { useConversation } from '../hooks/useConversations';
 import { useSendMessage, useMarkAsRead } from '../hooks/useMessageActions';
-import { getConversationDisplayName } from '../lib/conversationDisplay';
+import { getConversationDisplayName, getConversationAvatarUrl } from '../lib/conversationDisplay';
 import { NodeAvatar } from '../components/NodeAvatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,9 @@ export function ConversationPage() {
   }, [conversationId, session?.user.id]);
 
   const senderNames = new Map((conversation?.participants ?? []).map((p) => [p.user_id, p.display_name]));
+  const senderAvatars = new Map((conversation?.participants ?? []).map((p) => [p.user_id, p.avatar_url]));
   const conversationName = conversation ? getConversationDisplayName(conversation) : 'Conversation';
+  const conversationAvatarUrl = conversation ? getConversationAvatarUrl(conversation) : null;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -54,7 +56,7 @@ export function ConversationPage() {
   return (
     <div className="mx-auto flex max-w-xl flex-col p-4">
       <div className="mb-4 flex items-center gap-3">
-        <NodeAvatar name={conversationName} size={36} />
+        <NodeAvatar name={conversationName} avatarUrl={conversationAvatarUrl} size={36} />
         <h1 className="min-w-0 flex-1 truncate font-display text-base font-semibold md:text-xl">
           {conversationName}
         </h1>
@@ -68,7 +70,13 @@ export function ConversationPage() {
               key={message.id}
               className={`flex items-end gap-2 ${isOwn ? 'flex-row-reverse self-end' : 'self-start'}`}
             >
-              {!isOwn && <NodeAvatar name={senderNames.get(message.sender_id) ?? 'Unknown'} size={28} />}
+              {!isOwn && (
+                <NodeAvatar
+                  name={senderNames.get(message.sender_id) ?? 'Unknown'}
+                  avatarUrl={senderAvatars.get(message.sender_id)}
+                  size={28}
+                />
+              )}
               <div
                 className={`max-w-[75%] rounded-2xl px-3 py-2 ${
                   isOwn
