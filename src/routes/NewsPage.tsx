@@ -1,9 +1,34 @@
-import { ExternalLink, Newspaper } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Newspaper, Share2, Check } from 'lucide-react';
 import { useNews } from '../hooks/useNews';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import type { NewsArticle } from '../types/news';
 
 export function NewsPage() {
   const { data: articles, isLoading } = useNews();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  async function handleShare(article: NewsArticle) {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: article.title, url: article.url });
+      } catch {
+        // User cancelled the share sheet — nothing to do.
+      }
+      return;
+    }
+
+    await navigator.clipboard.writeText(article.url);
+    setCopiedId(article.id);
+    setTimeout(() => setCopiedId((current) => (current === article.id ? null : current)), 2000);
+  }
 
   return (
     <div className="mx-auto max-w-xl p-4">
@@ -17,8 +42,8 @@ export function NewsPage() {
       )}
       <div className="flex flex-col gap-4">
         {articles?.map((article) => (
-          <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer">
-            <Card className="transition-colors hover:bg-accent">
+          <Card key={article.id} className="transition-colors hover:bg-accent">
+            <a href={article.url} target="_blank" rel="noopener noreferrer">
               <CardHeader>
                 <CardTitle className="flex items-start justify-between gap-2 text-base">
                   <span>{article.title}</span>
@@ -29,8 +54,27 @@ export function NewsPage() {
               <CardContent className="text-xs text-muted-foreground">
                 {article.source} · {new Date(article.published_at).toLocaleDateString()}
               </CardContent>
-            </Card>
-          </a>
+            </a>
+            <CardFooter className="border-t pt-3">
+              <button
+                type="button"
+                onClick={() => handleShare(article)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground"
+              >
+                {copiedId === article.id ? (
+                  <>
+                    <Check size={18} className="text-mesh-teal" />
+                    Link copied
+                  </>
+                ) : (
+                  <>
+                    <Share2 size={18} />
+                    Share
+                  </>
+                )}
+              </button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
     </div>
