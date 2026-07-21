@@ -73,11 +73,11 @@ describe('AppShell', () => {
     expect(screen.getByText('Feed content')).toBeInTheDocument();
   });
 
-  it('shows a mobile header with the PiMesh logo and a link to the profile', () => {
+  it('shows a mobile header with the Pi Trend logo and a link to the profile', () => {
     mockUseUnreadCount.mockReturnValue({ data: 0 } as any);
     renderShell();
 
-    expect(screen.getAllByText('PiMesh').length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText('Pi Trend').length).toBeGreaterThan(0);
     const profileLinks = screen.getAllByRole('link', { name: 'Profile' });
     expect(profileLinks.length).toBeGreaterThan(0);
     profileLinks.forEach((link) => expect(link).toHaveAttribute('href', '/profile'));

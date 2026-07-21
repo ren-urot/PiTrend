@@ -5,6 +5,7 @@ import { useProfile } from '../../hooks/useProfile';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
 import { useUnreadCount } from '../../hooks/useUnreadCount';
 import { NodeAvatar } from '../NodeAvatar';
+import piTrendLogo from '../../assets/pi-trend-logo.svg';
 
 const tabs = [
   { to: '/feed', label: 'Feed', icon: Rss },
@@ -58,11 +59,13 @@ export function AppShell() {
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <aside className="hidden border-r md:block md:w-56">
-        <div className="p-4 text-xl font-bold">PiMesh</div>
+        <div className="p-4">
+          <img src={piTrendLogo} alt="Pi Trend" className="h-8 w-auto" />
+        </div>
         <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <span className="font-display text-lg font-bold text-primary">PiMesh</span>
+        <img src={piTrendLogo} alt="Pi Trend" className="h-6 w-auto" />
         <NavLink to="/profile" aria-label="Profile">
           <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
         </NavLink>
