@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,10 +40,10 @@ export function MarketplaceListingCard({
     navigate(`/messages/${conversationId}`);
   }
 
-  return (
-    <Card className={`overflow-hidden ${expanded ? 'col-span-2' : ''}`}>
-      <button type="button" onClick={onToggleExpand} className="block w-full text-left">
-        {expanded ? (
+  const content = (
+    <>
+      {expanded ? (
+        <div className="relative">
           <div className="flex gap-2 overflow-x-auto">
             {listing.photos.map((photo) => (
               <img
@@ -54,25 +54,50 @@ export function MarketplaceListingCard({
               />
             ))}
           </div>
-        ) : (
-          coverPhoto && (
-            <img src={coverPhoto.photo_url} alt="" className="aspect-square w-full object-cover" />
-          )
+          <span
+            aria-hidden="true"
+            className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow"
+          >
+            <ArrowLeft size={18} />
+          </span>
+        </div>
+      ) : (
+        coverPhoto && (
+          <img src={coverPhoto.photo_url} alt="" className="aspect-square w-full object-cover" />
+        )
+      )}
+
+      <CardContent className="p-4">
+        {listing.status === 'sold' && <Badge className="mb-2">Sold</Badge>}
+        <p className="truncate font-medium">{listing.title}</p>
+        <p className="font-semibold text-mesh-teal">
+          {formatListingPrice(listing.price_amount, listing.price_currency)}
+        </p>
+        <p className="text-sm text-muted-foreground">{listing.city_name}</p>
+
+        {expanded && listing.description && (
+          <p className="mt-2 whitespace-pre-wrap text-sm">{listing.description}</p>
         )}
+      </CardContent>
+    </>
+  );
 
-        <CardContent className="p-4">
-          {listing.status === 'sold' && <Badge className="mb-2">Sold</Badge>}
-          <p className="truncate font-medium">{listing.title}</p>
-          <p className="font-semibold text-mesh-teal">
-            {formatListingPrice(listing.price_amount, listing.price_currency)}
-          </p>
-          <p className="text-sm text-muted-foreground">{listing.city_name}</p>
-
-          {expanded && listing.description && (
-            <p className="mt-2 whitespace-pre-wrap text-sm">{listing.description}</p>
-          )}
-        </CardContent>
-      </button>
+  return (
+    <Card className={`overflow-hidden ${expanded ? 'col-span-2' : ''}`}>
+      {expanded ? (
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          aria-label="Back to Marketplace"
+          className="block w-full text-left"
+        >
+          {content}
+        </button>
+      ) : (
+        <button type="button" onClick={onToggleExpand} className="block w-full text-left">
+          {content}
+        </button>
+      )}
 
       {expanded && (
         <CardFooter className="gap-2 border-t p-4">

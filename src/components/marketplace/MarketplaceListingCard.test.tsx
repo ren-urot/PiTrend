@@ -86,6 +86,13 @@ describe('MarketplaceListingCard', () => {
     expect(onToggleExpand).toHaveBeenCalled();
   });
 
+  it('shows a Back to Marketplace control when expanded, which collapses the card', async () => {
+    const { onToggleExpand } = renderCard({ expanded: true });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Back to Marketplace' }));
+    expect(onToggleExpand).toHaveBeenCalled();
+  });
+
   it('shows the description and a Message Seller button when expanded for another seller', async () => {
     renderCard({ expanded: true });
     expect(screen.getByText('Barely used, great condition.')).toBeInTheDocument();
