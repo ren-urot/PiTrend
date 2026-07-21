@@ -122,7 +122,7 @@ export function PostComposer({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-3 rounded-2xl border bg-card p-4">
+    <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-3 rounded-2xl bg-card p-4">
       <div className="flex items-center gap-3">
         <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={44} />
         <Input
@@ -133,7 +133,7 @@ export function PostComposer({
         />
       </div>
 
-      <div className="flex items-center justify-around border-t pt-3">
+      <div className="flex items-center justify-around pt-3">
         <button
           type="button"
           aria-label="Video post"
