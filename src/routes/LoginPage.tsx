@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import piTrendLogo from '../assets/pi-trend-logo.svg';
 
 export function LoginPage() {
   const { session, loading, signInWithEmail, verifyOtp } = useAuth();
@@ -94,7 +95,7 @@ export function LoginPage() {
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4 p-6">
-      <h1 className="text-2xl font-bold">PiMesh</h1>
+      <img src={piTrendLogo} alt="Pi Trend" className="h-16 w-auto" />
       <p className="text-muted-foreground">Your Pi Community, Anywhere.</p>
       <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-3">
         <Input
