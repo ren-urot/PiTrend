@@ -57,7 +57,17 @@
   * {
     @apply border-border;
   }
+  html,
   body {
     @apply bg-background text-foreground;
+    /* Installed PWAs on mobile treat a pull-to-refresh gesture at the top
+       of the page as "reload to start_url", which bounces the user back
+       to /feed from wherever they actually were. Blocking the browser's
+       native overscroll gesture here stops that — refreshing the tab
+       (browser reload button, not a swipe gesture) is unaffected and
+       still correctly reloads the current route, since routing itself
+       already works (Vercel rewrites every path to index.html and
+       ProtectedLayout waits for the session before redirecting). */
+    overscroll-behavior-y: none;
   }
 }
