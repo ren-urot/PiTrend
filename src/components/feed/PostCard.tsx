@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ThumbsUp, MessageCircle, Share2, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToggleLike } from '../../hooks/useToggleLike';
 import { useToggleBookmark } from '../../hooks/useToggleBookmark';
@@ -103,11 +103,11 @@ export function PostCard({ post }: { post: Post }) {
               })
             }
           >
-            <ThumbsUp
+            <Heart
               size={18}
               className={`shrink-0 ${post.viewer_has_liked ? 'fill-primary text-primary' : ''}`}
             />
-            ({post.like_count})
+            {post.like_count}
           </button>
           <button
             type="button"
@@ -116,7 +116,7 @@ export function PostCard({ post }: { post: Post }) {
             onClick={() => setShowComments((value) => !value)}
           >
             <MessageCircle size={18} className="shrink-0" />
-            ({post.comment_count})
+            {post.comment_count}
           </button>
           <button
             type="button"

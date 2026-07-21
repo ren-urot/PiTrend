@@ -72,9 +72,9 @@ describe('PostCard', () => {
     expect(screen.getByText('Hello Cebu!')).toBeInTheDocument();
     expect(screen.getByText('Other User')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Like' })).toBeInTheDocument();
-    expect(screen.getByText('(3)')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Comment' })).toBeInTheDocument();
-    expect(screen.getByText('(2)')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
   it('toggles a like when the like button is clicked', async () => {
