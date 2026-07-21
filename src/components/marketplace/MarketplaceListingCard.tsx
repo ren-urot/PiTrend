@@ -41,30 +41,26 @@ export function MarketplaceListingCard({
   }
 
   return (
-    <Card className={expanded ? 'col-span-2' : ''}>
+    <Card className={`overflow-hidden ${expanded ? 'col-span-2' : ''}`}>
       <button type="button" onClick={onToggleExpand} className="block w-full text-left">
-        <CardContent className="p-4">
-          {expanded ? (
-            <div className="mb-2 flex gap-2 overflow-x-auto">
-              {listing.photos.map((photo) => (
-                <img
-                  key={photo.id}
-                  src={photo.photo_url}
-                  alt=""
-                  className="h-48 w-48 shrink-0 rounded-md object-cover"
-                />
-              ))}
-            </div>
-          ) : (
-            coverPhoto && (
+        {expanded ? (
+          <div className="flex gap-2 overflow-x-auto">
+            {listing.photos.map((photo) => (
               <img
-                src={coverPhoto.photo_url}
+                key={photo.id}
+                src={photo.photo_url}
                 alt=""
-                className="mb-2 aspect-square w-full rounded-md object-cover"
+                className="h-48 w-48 shrink-0 object-cover"
               />
-            )
-          )}
+            ))}
+          </div>
+        ) : (
+          coverPhoto && (
+            <img src={coverPhoto.photo_url} alt="" className="aspect-square w-full object-cover" />
+          )
+        )}
 
+        <CardContent className="p-4">
           {listing.status === 'sold' && <Badge className="mb-2">Sold</Badge>}
           <p className="truncate font-medium">{listing.title}</p>
           <p className="font-semibold text-mesh-teal">
