@@ -103,7 +103,7 @@ describe('app routing', () => {
 
   it('routes an unauthenticated user to login', async () => {
     renderApp();
-    await waitFor(() => expect(screen.getByText('PiMesh')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('Pi Trend')).toBeInTheDocument());
     expect(screen.getByPlaceholderText('you@example.com')).toBeInTheDocument();
   });
 
