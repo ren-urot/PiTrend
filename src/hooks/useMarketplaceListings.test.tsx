@@ -32,7 +32,7 @@ function makeBuilder(result: { data: unknown; error: unknown }) {
 }
 
 let builder = makeBuilder({ data: [mockRow], error: null });
-const mockFrom = vi.fn(() => builder);
+const mockFrom = vi.fn((..._args: unknown[]) => builder);
 
 vi.mock('../lib/supabase', () => ({
   supabase: { from: (...args: unknown[]) => mockFrom(...args) },
