@@ -9,10 +9,11 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import type { NewsArticle } from '../types/news';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import type { NewsArticle, NewsCategory } from '../types/news';
 
-export function NewsPage() {
-  const { data: articles, isLoading } = useNews();
+function ArticleList({ category }: { category: NewsCategory }) {
+  const { data: articles, isLoading } = useNews(category);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function handleShare(article: NewsArticle) {
@@ -31,52 +32,69 @@ export function NewsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl p-4">
-      <h1 className="mb-4 flex items-center gap-2 text-base font-semibold md:text-xl">
-        <Newspaper size={22} />
-        Pi News
-      </h1>
+    <div className="flex flex-col gap-4">
       {isLoading && <p className="text-muted-foreground">Loading news…</p>}
       {!isLoading && articles?.length === 0 && (
         <p className="text-muted-foreground">No news articles yet.</p>
       )}
-      <div className="flex flex-col gap-4">
-        {articles?.map((article) => (
-          <Card key={article.id} className="transition-colors hover:bg-accent">
-            <a href={article.url} target="_blank" rel="noopener noreferrer">
-              <CardHeader>
-                <CardTitle className="flex items-start justify-between gap-2 text-base">
-                  <span>{article.title}</span>
-                  <ExternalLink size={16} className="mt-1 shrink-0 text-muted-foreground" />
-                </CardTitle>
-                {article.summary && <CardDescription>{article.summary}</CardDescription>}
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                {article.source} · {new Date(article.published_at).toLocaleDateString()}
-              </CardContent>
-            </a>
-            <CardFooter className="border-t pt-3">
-              <button
-                type="button"
-                onClick={() => handleShare(article)}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground"
-              >
-                {copiedId === article.id ? (
-                  <>
-                    <Check size={18} className="text-mesh-teal" />
-                    Link copied
-                  </>
-                ) : (
-                  <>
-                    <Share2 size={18} />
-                    Share
-                  </>
-                )}
-              </button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      {articles?.map((article) => (
+        <Card key={article.id} className="transition-colors hover:bg-accent">
+          <a href={article.url} target="_blank" rel="noopener noreferrer">
+            <CardHeader>
+              <CardTitle className="flex items-start justify-between gap-2 text-base">
+                <span>{article.title}</span>
+                <ExternalLink size={16} className="mt-1 shrink-0 text-muted-foreground" />
+              </CardTitle>
+              {article.summary && <CardDescription>{article.summary}</CardDescription>}
+            </CardHeader>
+            <CardContent className="text-xs text-muted-foreground">
+              {article.source} · {new Date(article.published_at).toLocaleDateString()}
+            </CardContent>
+          </a>
+          <CardFooter className="border-t pt-3">
+            <button
+              type="button"
+              onClick={() => handleShare(article)}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground"
+            >
+              {copiedId === article.id ? (
+                <>
+                  <Check size={18} className="text-mesh-teal" />
+                  Link copied
+                </>
+              ) : (
+                <>
+                  <Share2 size={18} />
+                  Share
+                </>
+              )}
+            </button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function NewsPage() {
+  return (
+    <div className="mx-auto max-w-xl p-4">
+      <h1 className="mb-4 flex items-center gap-2 text-base font-semibold md:text-xl">
+        <Newspaper size={22} />
+        News
+      </h1>
+      <Tabs defaultValue="pi_network">
+        <TabsList className="mb-4">
+          <TabsTrigger value="pi_network">Pi News</TabsTrigger>
+          <TabsTrigger value="crypto_update">Crypto Update</TabsTrigger>
+        </TabsList>
+        <TabsContent value="pi_network">
+          <ArticleList category="pi_network" />
+        </TabsContent>
+        <TabsContent value="crypto_update">
+          <ArticleList category="crypto_update" />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
