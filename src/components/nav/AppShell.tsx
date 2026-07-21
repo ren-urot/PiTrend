@@ -68,15 +68,13 @@ export function AppShell() {
         <NavItems orientation="vertical" unreadCount={unreadCount ?? 0} />
       </aside>
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <img src={piTrendLogo} alt="Pi Trend" className="h-12 w-auto" />
-        <div className="flex items-center gap-4">
-          <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
-            <Search size={22} />
-          </NavLink>
-          <NavLink to="/profile" aria-label="Profile">
-            <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
-          </NavLink>
-        </div>
+        <NavLink to="/profile" aria-label="Profile">
+          <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
+        </NavLink>
+        <img src={piTrendLogo} alt="Pi Trend" className="absolute left-1/2 h-12 w-auto -translate-x-1/2" />
+        <NavLink to="/search" aria-label="Search" className="text-muted-foreground">
+          <Search size={22} />
+        </NavLink>
       </header>
       <main className="flex-1 overflow-y-auto pb-16 pt-14 md:pb-0 md:pt-0">
         <Outlet />
