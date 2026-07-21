@@ -64,7 +64,7 @@ export function AppShell() {
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
         <span className="font-display text-lg font-bold text-primary">PiMesh</span>
         <NavLink to="/profile" aria-label="Profile">
-          <NodeAvatar name={profile?.display_name ?? '?'} size={32} />
+          <NodeAvatar name={profile?.display_name ?? '?'} avatarUrl={profile?.avatar_url} size={32} />
         </NavLink>
       </header>
       <main className="flex-1 overflow-y-auto pb-16 pt-14 md:pb-0 md:pt-0">
