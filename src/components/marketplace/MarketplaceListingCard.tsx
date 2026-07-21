@@ -43,23 +43,25 @@ export function MarketplaceListingCard({
   const content = (
     <>
       {expanded ? (
-        <div className="relative">
+        <div>
+          <div className="flex items-center p-2">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-foreground"
+            >
+              <ArrowLeft size={18} />
+            </span>
+          </div>
           <div className="flex gap-2 overflow-x-auto">
             {listing.photos.map((photo) => (
               <img
                 key={photo.id}
                 src={photo.photo_url}
                 alt=""
-                className="h-48 w-48 shrink-0 object-cover"
+                className="aspect-square w-full shrink-0 object-cover"
               />
             ))}
           </div>
-          <span
-            aria-hidden="true"
-            className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow"
-          >
-            <ArrowLeft size={18} />
-          </span>
         </div>
       ) : (
         coverPhoto && (
