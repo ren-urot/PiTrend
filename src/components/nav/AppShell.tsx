@@ -17,6 +17,10 @@ const tabs = [
 ];
 
 function NavItems({ orientation, unreadCount }: { orientation: 'horizontal' | 'vertical'; unreadCount: number }) {
+  // Profile is reachable from the mobile header's avatar link, so the
+  // bottom tab bar (mobile only) skips it to save space.
+  const visibleTabs = orientation === 'horizontal' ? tabs.filter((tab) => tab.to !== '/profile') : tabs;
+
   return (
     <nav
       className={
@@ -25,7 +29,7 @@ function NavItems({ orientation, unreadCount }: { orientation: 'horizontal' | 'v
           : 'flex flex-col gap-1 p-4'
       }
     >
-      {tabs.map(({ to, label, icon: Icon }) => (
+      {visibleTabs.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
           to={to}

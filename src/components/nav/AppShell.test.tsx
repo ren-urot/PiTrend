@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppShell } from './AppShell';
@@ -71,6 +71,16 @@ describe('AppShell', () => {
     expect(screen.getAllByText('News').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Profile').length).toBeGreaterThan(0);
     expect(screen.getByText('Feed content')).toBeInTheDocument();
+  });
+
+  it('omits Profile from the mobile bottom nav bar (still reachable via the header avatar)', () => {
+    mockUseUnreadCount.mockReturnValue({ data: 0 } as any);
+    renderShell();
+
+    const navs = screen.getAllByRole('navigation');
+    const mobileNav = navs[navs.length - 1];
+    expect(within(mobileNav).queryByText('Profile')).not.toBeInTheDocument();
+    expect(within(mobileNav).getByText('Feed')).toBeInTheDocument();
   });
 
   it('shows a mobile header with the Pi Trend logo and a link to the profile', () => {
