@@ -90,6 +90,7 @@ export function PostCard({ post }: { post: Post }) {
           <button
             type="button"
             disabled={!viewerId}
+            aria-label={post.viewer_has_liked ? 'Liked' : 'Like'}
             className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() =>
               viewerId &&
@@ -106,19 +107,21 @@ export function PostCard({ post }: { post: Post }) {
               size={18}
               className={`shrink-0 ${post.viewer_has_liked ? 'fill-primary text-primary' : ''}`}
             />
-            {post.viewer_has_liked ? 'Liked' : 'Like'} ({post.like_count})
+            ({post.like_count})
           </button>
           <button
             type="button"
+            aria-label="Comment"
             className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() => setShowComments((value) => !value)}
           >
             <MessageCircle size={18} className="shrink-0" />
-            Comment ({post.comment_count})
+            ({post.comment_count})
           </button>
           <button
             type="button"
             disabled={!viewerId}
+            aria-label="Share"
             className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             onClick={() =>
               viewerId &&
@@ -131,7 +134,6 @@ export function PostCard({ post }: { post: Post }) {
             }
           >
             <Share2 size={18} className="shrink-0" />
-            Share
           </button>
         </div>
         <button

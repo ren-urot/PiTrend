@@ -71,14 +71,16 @@ describe('PostCard', () => {
     renderCard();
     expect(screen.getByText('Hello Cebu!')).toBeInTheDocument();
     expect(screen.getByText('Other User')).toBeInTheDocument();
-    expect(screen.getByText('Like (3)')).toBeInTheDocument();
-    expect(screen.getByText('Comment (2)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Like' })).toBeInTheDocument();
+    expect(screen.getByText('(3)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Comment' })).toBeInTheDocument();
+    expect(screen.getByText('(2)')).toBeInTheDocument();
   });
 
   it('toggles a like when the like button is clicked', async () => {
     renderCard();
     const user = userEvent.setup();
-    await user.click(screen.getByText('Like (3)'));
+    await user.click(screen.getByRole('button', { name: 'Like' }));
 
     expect(mockToggleLikeMutate).toHaveBeenCalledWith({
       postId: 'post-1',

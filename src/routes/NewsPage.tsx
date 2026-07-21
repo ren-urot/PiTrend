@@ -49,23 +49,20 @@ function NewsArticleCard({ article }: { article: NewsArticle }) {
       <CardFooter className="gap-3 border-t p-4 text-sm text-muted-foreground">
         <button
           type="button"
+          aria-label="Comment"
           onClick={() => setShowComments((value) => !value)}
           className="flex items-center gap-1.5"
         >
           <MessageCircle size={18} />
-          Comment
         </button>
-        <button type="button" onClick={handleShare} className="flex items-center gap-1.5">
+        <button type="button" aria-label="Share" onClick={handleShare} className="flex items-center gap-1.5">
           {copied ? (
             <>
               <Check size={18} className="text-mesh-teal" />
               Link copied
             </>
           ) : (
-            <>
-              <Share2 size={18} />
-              Share
-            </>
+            <Share2 size={18} />
           )}
         </button>
       </CardFooter>
