@@ -1,29 +1,57 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PublicProfilePage } from './PublicProfilePage';
 import { supabase } from '../lib/supabase';
 
+const mockProfileRow = {
+  id: 'user-1',
+  username: 'renz',
+  display_name: 'Ren',
+  avatar_url: null,
+  created_at: '2026-01-01',
+};
+
+let mockSessionUserId: string | undefined = 'viewer-1';
+let mockPostsData: any[] = [];
+
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => ({
+    session: mockSessionUserId ? { user: { id: mockSessionUserId } } : null,
+    loading: false,
+    signInWithEmail: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 vi.mock('../lib/supabase', () => ({
   supabase: {
-    from: vi.fn(() => ({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () =>
-            Promise.resolve({
-              data: {
-                id: 'user-1',
-                username: 'renz',
-                display_name: 'Ren',
-                avatar_url: null,
-                created_at: '2026-01-01',
-              },
-              error: null,
+    from: vi.fn((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: mockProfileRow, error: null }),
             }),
-        }),
-      }),
-    })),
+          }),
+        };
+      }
+      if (table === 'posts') {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () => ({
+                limit: () => Promise.resolve({ data: mockPostsData, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: () => ({ eq: () => ({ in: () => Promise.resolve({ data: [] }) }) }),
+      };
+    }),
   },
 }));
 
@@ -41,22 +69,78 @@ function renderAt(path: string) {
 }
 
 describe('PublicProfilePage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSessionUserId = 'viewer-1';
+    mockPostsData = [];
+  });
+
   it('renders a profile by username with no auth required', async () => {
+    mockSessionUserId = undefined;
+    mockPostsData = [];
     renderAt('/u/renz');
     await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
     expect(screen.getByText('@renz')).toBeInTheDocument();
   });
 
   it('shows a not-found message when no profile matches the username', async () => {
-    vi.mocked(supabase.from).mockReturnValueOnce({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-    } as never);
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
+            }),
+          }),
+        }) as never
+    );
 
     renderAt('/u/nobody');
     await waitFor(() => expect(screen.getByText('No profile found for @nobody.')).toBeInTheDocument());
+  });
+
+  it("shows the user's posts when the viewer is signed in", async () => {
+    mockSessionUserId = 'viewer-1';
+    mockPostsData = [
+      {
+        id: 'post-1',
+        author_id: 'user-1',
+        city_id: 'city-1',
+        channel_id: null,
+        post_type: 'text',
+        body: 'Hello from Ren',
+        shared_post_id: null,
+        created_at: '2026-01-03T00:00:00Z',
+        author: { username: 'renz', display_name: 'Ren', avatar_url: null },
+        post_media: null,
+        poll_options: [],
+        post_buy_sell: null,
+        shared_post: null,
+        likes: [{ count: 0 }],
+        comments: [{ count: 0 }],
+      },
+    ];
+
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByText('Hello from Ren')).toBeInTheDocument());
+  });
+
+  it('shows an empty state when the user has no posts', async () => {
+    mockSessionUserId = 'viewer-1';
+    mockPostsData = [];
+
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('No posts yet.')).toBeInTheDocument());
+  });
+
+  it('does not attempt to show posts for an anonymous viewer', async () => {
+    mockSessionUserId = undefined;
+    mockPostsData = [];
+
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
+    expect(screen.queryByText('No posts yet.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Loading posts…')).not.toBeInTheDocument();
   });
 });

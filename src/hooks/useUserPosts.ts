@@ -3,25 +3,23 @@ import { supabase } from '../lib/supabase';
 import { POST_SELECT_FIELDS, fetchViewerPostState, mapPostRow } from '../lib/postMapping';
 import type { Post } from '../types/post';
 
-interface UsePostsParams {
-  cityId: string | undefined;
-  channelId: string | null;
+interface UseUserPostsParams {
+  authorId: string | undefined;
   viewerId: string | undefined;
 }
 
-export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
+export function useUserPosts({ authorId, viewerId }: UseUserPostsParams) {
   return useQuery({
-    queryKey: ['posts', cityId, channelId],
+    queryKey: ['user-posts', authorId],
     queryFn: async (): Promise<Post[]> => {
-      if (!cityId) return [];
+      if (!authorId) return [];
 
-      const baseQuery = supabase.from('posts').select(POST_SELECT_FIELDS);
-
-      const scopedQuery = channelId
-        ? baseQuery.eq('channel_id', channelId)
-        : baseQuery.eq('city_id', cityId).is('channel_id', null);
-
-      const { data, error } = await scopedQuery.order('created_at', { ascending: false }).limit(20);
+      const { data, error } = await supabase
+        .from('posts')
+        .select(POST_SELECT_FIELDS)
+        .eq('author_id', authorId)
+        .order('created_at', { ascending: false })
+        .limit(20);
       if (error) throw error;
 
       const rows = data ?? [];
@@ -30,6 +28,5 @@ export function usePosts({ cityId, channelId, viewerId }: UsePostsParams) {
 
       return rows.map((row: any) => mapPostRow(row, viewerState));
     },
-    enabled: !!cityId,
   });
 }
