@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRssFeed, decodeHtmlEntities } from './newsFeedParser';
+import { parseRssFeed, decodeHtmlEntities } from './fetch-news';
 
 const SAMPLE_FEED = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0">
 <channel>
