@@ -14,6 +14,10 @@ vi.mock('../../lib/offlineQueue', () => ({
   processQueue: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../lib/messageQueue', () => ({
+  processMessageQueue: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({
     session: { user: { id: 'user-1' } },
