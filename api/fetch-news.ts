@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { parseRssFeed, type ParsedNewsItem } from '../src/lib/newsFeedParser';
-import type { NewsCategory } from '../src/types/news';
+import { parseRssFeed, type ParsedNewsItem, type NewsCategory } from './_lib/newsFeedParser';
 
 const FEEDS: { url: string; category: NewsCategory }[] = [
   { url: 'https://crypto.news/tag/pi-network/feed/', category: 'pi_network' },

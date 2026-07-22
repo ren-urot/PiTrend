@@ -1,4 +1,9 @@
-import type { NewsCategory } from '../types/news';
+// Deliberately self-contained (no imports from ../../src) — Vercel's
+// Node function builder failed to bundle a relative import reaching
+// outside the api/ directory at runtime (ERR_MODULE_NOT_FOUND on
+// package.json's "type": "module" ESM resolution), so this file and its
+// test live entirely under api/ instead.
+export type NewsCategory = 'pi_network' | 'crypto_update';
 
 export interface ParsedNewsItem {
   title: string;
