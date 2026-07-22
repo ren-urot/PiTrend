@@ -30,6 +30,8 @@ export function ConversationPage() {
   const [mediaFile, setMediaFile] = useState<File | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const isFirstScrollRef = useRef(true);
 
   useEffect(() => {
     if (!conversationId || !session?.user.id) return;
@@ -41,6 +43,19 @@ export function ConversationPage() {
   const conversationName = conversation ? getConversationDisplayName(conversation) : 'Conversation';
   const conversationAvatarUrl = conversation ? getConversationAvatarUrl(conversation) : null;
   const ownDrafts = (drafts ?? []).filter((draft) => draft.conversationId === conversationId);
+
+  // Jump straight to the bottom on first load of a conversation (no
+  // animation — there's no "previous position" to animate from), then
+  // smooth-scroll on every later arrival (a new message or draft).
+  useEffect(() => {
+    isFirstScrollRef.current = true;
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!messages) return;
+    bottomRef.current?.scrollIntoView({ behavior: isFirstScrollRef.current ? 'auto' : 'smooth' });
+    isFirstScrollRef.current = false;
+  }, [messages, ownDrafts.length]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -127,6 +142,7 @@ export function ConversationPage() {
         {ownDrafts.map((draft) => (
           <DraftMessageBubble key={draft.id} draft={draft} />
         ))}
+        <div ref={bottomRef} />
       </div>
       <form
         onSubmit={handleSubmit}
