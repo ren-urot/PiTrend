@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ImagePlus, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useMessages } from '../hooks/useMessages';
 import { useConversation } from '../hooks/useConversations';
-import { useSendMessage, useMarkAsRead } from '../hooks/useMessageActions';
+import { useMarkAsRead } from '../hooks/useMessageActions';
+import { useQueuedMessageDrafts } from '../hooks/useQueuedMessageDrafts';
+import { queueDraftMessage, processMessageQueue } from '../lib/messageQueue';
 import { getConversationDisplayName, getConversationAvatarUrl } from '../lib/conversationDisplay';
 import { NodeAvatar } from '../components/NodeAvatar';
+import { DraftMessageBubble } from '../components/messages/DraftMessageBubble';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -19,10 +23,12 @@ export function ConversationPage() {
   const { session } = useAuth();
   const { data: conversation } = useConversation(conversationId, session?.user.id);
   const { data: messages, isLoading } = useMessages(conversationId);
-  const sendMessage = useSendMessage();
+  const { data: drafts } = useQueuedMessageDrafts(session?.user.id);
   const markAsRead = useMarkAsRead();
+  const queryClient = useQueryClient();
   const [body, setBody] = useState('');
   const [mediaFile, setMediaFile] = useState<File | undefined>(undefined);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,21 +40,35 @@ export function ConversationPage() {
   const senderAvatars = new Map((conversation?.participants ?? []).map((p) => [p.user_id, p.avatar_url]));
   const conversationName = conversation ? getConversationDisplayName(conversation) : 'Conversation';
   const conversationAvatarUrl = conversation ? getConversationAvatarUrl(conversation) : null;
+  const ownDrafts = (drafts ?? []).filter((draft) => draft.conversationId === conversationId);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!conversationId || !session?.user.id) return;
     if (!body.trim() && !mediaFile) return;
 
-    await sendMessage.mutateAsync({
-      conversationId,
-      senderId: session.user.id,
-      body: body.trim() || null,
-      mediaFile,
-    });
-    setBody('');
-    setMediaFile(undefined);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setSubmitting(true);
+    try {
+      await queueDraftMessage({
+        conversationId,
+        senderId: session.user.id,
+        body: body.trim() || null,
+        mediaBlob: mediaFile ? { blob: mediaFile, mediaType: 'photo' } : undefined,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['message-drafts', session.user.id] });
+      setBody('');
+      setMediaFile(undefined);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+
+      processMessageQueue().then(() => {
+        queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+        queryClient.invalidateQueries({ queryKey: ['conversations', session.user.id] });
+        queryClient.invalidateQueries({ queryKey: ['message-drafts', session.user.id] });
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (!conversationId) return null;
@@ -104,6 +124,9 @@ export function ConversationPage() {
             </div>
           );
         })}
+        {ownDrafts.map((draft) => (
+          <DraftMessageBubble key={draft.id} draft={draft} />
+        ))}
       </div>
       <form
         onSubmit={handleSubmit}
@@ -149,7 +172,7 @@ export function ConversationPage() {
             onChange={(event) => setBody(event.target.value)}
             className="min-w-0 flex-1"
           />
-          <Button type="submit" disabled={sendMessage.isPending} className="shrink-0">
+          <Button type="submit" disabled={submitting} className="shrink-0">
             Send
           </Button>
         </div>

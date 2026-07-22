@@ -2,10 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConversationPage } from './ConversationPage';
 import { useMessages } from '../hooks/useMessages';
 import { useConversation } from '../hooks/useConversations';
 import { useSendMessage, useMarkAsRead } from '../hooks/useMessageActions';
+import { queueDraftMessage } from '../lib/messageQueue';
+import { useQueuedMessageDrafts } from '../hooks/useQueuedMessageDrafts';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -19,19 +22,29 @@ vi.mock('../hooks/useAuth', () => ({
 vi.mock('../hooks/useMessages');
 vi.mock('../hooks/useConversations');
 vi.mock('../hooks/useMessageActions');
+vi.mock('../lib/messageQueue', () => ({
+  queueDraftMessage: vi.fn(),
+  processMessageQueue: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('../hooks/useQueuedMessageDrafts');
 
 const mockUseMessages = vi.mocked(useMessages);
 const mockUseConversation = vi.mocked(useConversation);
 const mockUseSendMessage = vi.mocked(useSendMessage);
 const mockUseMarkAsRead = vi.mocked(useMarkAsRead);
+const mockQueueDraftMessage = vi.mocked(queueDraftMessage);
+const mockUseQueuedMessageDrafts = vi.mocked(useQueuedMessageDrafts);
 
 function renderAt(path: string) {
+  const client = new QueryClient();
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/messages/:conversationId" element={<ConversationPage />} />
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/messages/:conversationId" element={<ConversationPage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -51,6 +64,8 @@ describe('ConversationPage', () => {
     mockUseMessages.mockReturnValue({ data: [], isLoading: false } as any);
     mockUseSendMessage.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any);
     mockUseMarkAsRead.mockReturnValue({ mutate: vi.fn() } as any);
+    mockUseQueuedMessageDrafts.mockReturnValue({ data: [] } as any);
+    mockQueueDraftMessage.mockReset().mockResolvedValue('draft-1');
   });
 
   it('shows the conversation display name as the header', async () => {
@@ -107,9 +122,7 @@ describe('ConversationPage', () => {
     await waitFor(() => expect(mutate).toHaveBeenCalledWith({ conversationId: 'conv-1', userId: 'user-1' }));
   });
 
-  it('sends a text message and clears the input', async () => {
-    const mutateAsync = vi.fn().mockResolvedValue(undefined);
-    mockUseSendMessage.mockReturnValue({ mutateAsync, isPending: false } as any);
+  it('queues a draft message and clears the input on submit', async () => {
     renderAt('/messages/conv-1');
 
     const user = userEvent.setup();
@@ -118,23 +131,62 @@ describe('ConversationPage', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
     await waitFor(() =>
-      expect(mutateAsync).toHaveBeenCalledWith({
+      expect(mockQueueDraftMessage).toHaveBeenCalledWith({
         conversationId: 'conv-1',
         senderId: 'user-1',
         body: 'Hello!',
-        mediaFile: undefined,
+        mediaBlob: undefined,
       })
     );
     expect(input).toHaveValue('');
   });
 
-  it('does not send an empty message with no text and no photo', async () => {
-    const mutateAsync = vi.fn();
-    mockUseSendMessage.mockReturnValue({ mutateAsync, isPending: false } as any);
+  it('does not queue a draft with no text and no photo', async () => {
     renderAt('/messages/conv-1');
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Send' }));
-    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(mockQueueDraftMessage).not.toHaveBeenCalled();
+  });
+
+  it('renders a queued draft as a bubble among the real messages', async () => {
+    mockUseQueuedMessageDrafts.mockReturnValue({
+      data: [
+        {
+          id: 'draft-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          body: 'Still sending this',
+          status: 'queued',
+          lastError: null,
+          createdAt: '2026-01-01T00:02:00Z',
+        },
+      ],
+    } as any);
+
+    renderAt('/messages/conv-1');
+
+    await waitFor(() => expect(screen.getByText('Still sending this')).toBeInTheDocument());
+    expect(screen.getByText('Sending…')).toBeInTheDocument();
+  });
+
+  it("does not render another conversation's draft here", async () => {
+    mockUseQueuedMessageDrafts.mockReturnValue({
+      data: [
+        {
+          id: 'draft-1',
+          conversationId: 'conv-OTHER',
+          senderId: 'user-1',
+          body: 'Wrong thread',
+          status: 'queued',
+          lastError: null,
+          createdAt: '2026-01-01T00:02:00Z',
+        },
+      ],
+    } as any);
+
+    renderAt('/messages/conv-1');
+    await waitFor(() => expect(screen.getByPlaceholderText('Message…')).toBeInTheDocument());
+    expect(screen.queryByText('Wrong thread')).not.toBeInTheDocument();
   });
 });
