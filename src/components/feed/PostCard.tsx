@@ -6,6 +6,7 @@ import { useToggleBookmark } from '../../hooks/useToggleBookmark';
 import { useCreateRepost } from '../../hooks/useCreateRepost';
 import { CommentThread } from './CommentThread';
 import { PollOptionRow } from './PollOptionRow';
+import { NodeAvatar } from '../NodeAvatar';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import type { Post } from '../../types/post';
 
@@ -22,9 +23,7 @@ export function PostCard({ post }: { post: Post }) {
     <Card>
       <CardContent className="p-4">
         <div className="mb-2 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm">
-            {post.author.display_name.charAt(0).toUpperCase()}
-          </div>
+          <NodeAvatar name={post.author.display_name} avatarUrl={post.author.avatar_url} size={32} />
           <div>
             <p className="text-sm font-medium">{post.author.display_name}</p>
             <p className="text-xs text-muted-foreground">@{post.author.username}</p>

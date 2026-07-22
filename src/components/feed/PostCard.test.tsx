@@ -77,6 +77,17 @@ describe('PostCard', () => {
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
+  it("shows the author's actual photo when they have one, not just initials", () => {
+    renderCard({ author: { username: 'other', display_name: 'Other User', avatar_url: 'https://example.com/other.jpg' } });
+    expect(screen.getByRole('img', { name: 'Other User' })).toHaveAttribute('src', 'https://example.com/other.jpg');
+  });
+
+  it("falls back to initials when the author has no photo", () => {
+    renderCard();
+    expect(screen.queryByRole('img', { name: 'Other User' })).not.toBeInTheDocument();
+    expect(screen.getByText('OU')).toBeInTheDocument();
+  });
+
   it('toggles a like when the like button is clicked', async () => {
     renderCard();
     const user = userEvent.setup();
