@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PublicProfilePage } from './PublicProfilePage';
@@ -15,6 +16,9 @@ const mockProfileRow = {
 
 let mockSessionUserId: string | undefined = 'viewer-1';
 let mockPostsData: any[] = [];
+let mockConnectionsData: any[] = [];
+const mockConnectionsInsert = vi.fn().mockResolvedValue({ error: null });
+const mockConnectionsDeleteEq = vi.fn().mockResolvedValue({ error: null });
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -48,6 +52,13 @@ vi.mock('../lib/supabase', () => ({
           }),
         };
       }
+      if (table === 'connections') {
+        return {
+          select: () => ({ eq: () => Promise.resolve({ data: mockConnectionsData, error: null }) }),
+          insert: mockConnectionsInsert,
+          delete: () => ({ eq: () => ({ eq: mockConnectionsDeleteEq }) }),
+        };
+      }
       return {
         select: () => ({ eq: () => ({ in: () => Promise.resolve({ data: [] }) }) }),
       };
@@ -73,6 +84,9 @@ describe('PublicProfilePage', () => {
     vi.clearAllMocks();
     mockSessionUserId = 'viewer-1';
     mockPostsData = [];
+    mockConnectionsData = [];
+    mockConnectionsInsert.mockResolvedValue({ error: null });
+    mockConnectionsDeleteEq.mockResolvedValue({ error: null });
   });
 
   it('renders a profile by username with no auth required', async () => {
@@ -142,5 +156,36 @@ describe('PublicProfilePage', () => {
     await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
     expect(screen.queryByText('No posts yet.')).not.toBeInTheDocument();
     expect(screen.queryByText('Loading posts…')).not.toBeInTheDocument();
+  });
+
+  it('shows a Connect button and follows on click when not yet connected', async () => {
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Connect' })).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Connect' }));
+
+    await waitFor(() =>
+      expect(mockConnectionsInsert).toHaveBeenCalledWith({ follower_id: 'viewer-1', followed_id: 'user-1' })
+    );
+  });
+
+  it('shows a Connected button and unfollows on click when already connected', async () => {
+    mockConnectionsData = [{ followed_id: 'user-1' }];
+
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Connected' })).toBeInTheDocument());
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Connected' }));
+
+    await waitFor(() => expect(mockConnectionsDeleteEq).toHaveBeenCalledWith('followed_id', 'user-1'));
+  });
+
+  it('does not show a Connect button for an anonymous viewer', async () => {
+    mockSessionUserId = undefined;
+    renderAt('/u/renz');
+    await waitFor(() => expect(screen.getByText('Ren')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /Connect/ })).not.toBeInTheDocument();
   });
 });

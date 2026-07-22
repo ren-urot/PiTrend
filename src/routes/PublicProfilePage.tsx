@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useUserPosts } from '../hooks/useUserPosts';
+import { useMyFollowedIds } from '../hooks/useMyFollowedIds';
 import { NodeAvatar } from '../components/NodeAvatar';
 import { PostCard } from '../components/feed/PostCard';
+import { ConnectButton } from '../components/connections/ConnectButton';
 import type { Profile } from '../types/profile';
 
 export function PublicProfilePage() {
@@ -29,6 +31,7 @@ export function PublicProfilePage() {
     authorId: profile?.id,
     viewerId: session?.user.id,
   });
+  const { data: followedIds } = useMyFollowedIds(session?.user.id);
 
   if (isLoading) return <div className="p-6">Loading…</div>;
   if (!profile) return <div className="p-6">No profile found for @{username}.</div>;
@@ -40,6 +43,11 @@ export function PublicProfilePage() {
         <p className="text-lg font-semibold">{profile.display_name}</p>
         <p className="text-muted-foreground">@{profile.username}</p>
       </div>
+      <ConnectButton
+        viewerId={session?.user.id}
+        targetUserId={profile.id}
+        isFollowing={followedIds?.has(profile.id) ?? false}
+      />
 
       <div className="flex w-full flex-col gap-4">
         {session && postsLoading && <p className="text-muted-foreground">Loading posts…</p>}

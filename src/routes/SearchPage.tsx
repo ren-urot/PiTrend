@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSearchProfiles } from '../hooks/useSearchProfiles';
+import { useMyFollowedIds } from '../hooks/useMyFollowedIds';
 import { NodeAvatar } from '../components/NodeAvatar';
+import { ConnectButton } from '../components/connections/ConnectButton';
 import { Input } from '@/components/ui/input';
 
 export function SearchPage() {
@@ -11,6 +13,7 @@ export function SearchPage() {
   const { session } = useAuth();
   const [query, setQuery] = useState('');
   const { data: results, isLoading } = useSearchProfiles(query, session?.user.id ?? '');
+  const { data: followedIds } = useMyFollowedIds(session?.user.id);
 
   const hasQuery = query.trim().length > 0;
 
@@ -42,13 +45,21 @@ export function SearchPage() {
       <div className="flex flex-col">
         {hasQuery &&
           results?.map((profile) => (
-            <Link key={profile.id} to={`/u/${profile.username}`} className="flex items-center gap-3 py-3">
-              <NodeAvatar name={profile.display_name} avatarUrl={profile.avatar_url} size={48} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{profile.username}</p>
-                <p className="truncate text-sm text-muted-foreground">{profile.display_name}</p>
-              </div>
-            </Link>
+            <div key={profile.id} className="flex items-center gap-3 py-3">
+              <Link to={`/u/${profile.username}`} className="flex min-w-0 flex-1 items-center gap-3">
+                <NodeAvatar name={profile.display_name} avatarUrl={profile.avatar_url} size={48} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{profile.username}</p>
+                  <p className="truncate text-sm text-muted-foreground">{profile.display_name}</p>
+                </div>
+              </Link>
+              <ConnectButton
+                viewerId={session?.user.id}
+                targetUserId={profile.id}
+                isFollowing={followedIds?.has(profile.id) ?? false}
+                size="sm"
+              />
+            </div>
           ))}
       </div>
     </div>

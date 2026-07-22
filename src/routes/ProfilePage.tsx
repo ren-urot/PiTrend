@@ -8,7 +8,9 @@ import { useProfile } from '../hooks/useProfile';
 import { useCities } from '../hooks/useCities';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useUpdateAvatar } from '../hooks/useUpdateAvatar';
+import { useConnections } from '../hooks/useConnections';
 import { NodeAvatar } from '../components/NodeAvatar';
+import { ConnectionsDialog } from '../components/connections/ConnectionsDialog';
 import { groupCitiesByIslandGroup, ISLAND_GROUP_LABELS } from '../lib/cityDisplay';
 import {
   Select,
@@ -27,10 +29,12 @@ export function ProfilePage() {
   const isOnline = useOnlineStatus();
   const queryClient = useQueryClient();
   const updateAvatar = useUpdateAvatar();
+  const { data: connections } = useConnections(session?.user.id);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [updatingCity, setUpdatingCity] = useState(false);
   const [cityError, setCityError] = useState('');
   const [avatarError, setAvatarError] = useState('');
+  const [networkOpen, setNetworkOpen] = useState(false);
 
   if (authLoading || profileLoading) {
     return <div className="p-6">Loading profile…</div>;
@@ -109,6 +113,14 @@ export function ProfilePage() {
         <p className="text-lg font-semibold">{profile.display_name}</p>
         <p className="text-muted-foreground">@{profile.username}</p>
       </div>
+      <button
+        type="button"
+        onClick={() => setNetworkOpen(true)}
+        className="text-sm text-muted-foreground hover:text-foreground"
+      >
+        <span className="font-semibold text-foreground">{connections?.length ?? 0}</span> Connections
+      </button>
+      <ConnectionsDialog userId={session?.user.id} open={networkOpen} onOpenChange={setNetworkOpen} />
       <div className="flex w-full max-w-sm flex-col items-center gap-2">
         <Select value={profile.city_id} onValueChange={handleCityChange} disabled={updatingCity}>
           <SelectTrigger>
