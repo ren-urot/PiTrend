@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg'],
       manifest: {
-        name: 'PiMesh',
-        short_name: 'PiMesh',
+        name: 'Pi Trend',
+        short_name: 'Pi Trend',
         description: 'Your Pi Community, Anywhere.',
         theme_color: '#7c3aed',
         background_color: '#ffffff',
