@@ -21,9 +21,21 @@ export interface DraftPost {
   createdAt: string;
 }
 
+export interface DraftMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  body: string | null;
+  mediaBlob?: { blob: Blob; mediaType: 'photo' };
+  status: 'queued' | 'syncing' | 'failed';
+  lastError: string | null;
+  createdAt: string;
+}
+
 export class PiMeshDB extends Dexie {
   queryCache!: Table<CachedQueryClient, string>;
   draftPosts!: Table<DraftPost, string>;
+  draftMessages!: Table<DraftMessage, string>;
 
   constructor() {
     super('pimesh');
@@ -33,6 +45,11 @@ export class PiMeshDB extends Dexie {
     this.version(2).stores({
       queryCache: 'key',
       draftPosts: 'id, authorId, status',
+    });
+    this.version(3).stores({
+      queryCache: 'key',
+      draftPosts: 'id, authorId, status',
+      draftMessages: 'id, senderId, conversationId, status',
     });
   }
 }
