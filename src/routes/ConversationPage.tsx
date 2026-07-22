@@ -53,8 +53,18 @@ export function ConversationPage() {
 
   useEffect(() => {
     if (!messages) return;
-    bottomRef.current?.scrollIntoView({ behavior: isFirstScrollRef.current ? 'auto' : 'smooth' });
+    const behavior = isFirstScrollRef.current ? 'auto' : 'smooth';
     isFirstScrollRef.current = false;
+    // Defer past the current paint: right after new content lands, the
+    // browser hasn't necessarily reflowed yet, so scrollIntoView can compute
+    // against a stale (too-short) scrollHeight and stop short of the true
+    // bottom, leaving the newest bubble tucked behind the fixed composer.
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({ behavior });
+      });
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages, ownDrafts.length]);
 
   async function handleSubmit(event: FormEvent) {
@@ -97,7 +107,7 @@ export function ConversationPage() {
         </h1>
       </div>
       {isLoading && <p className="text-muted-foreground">Loading messages…</p>}
-      <div className="flex flex-col gap-3 pb-36 md:pb-24">
+      <div className="flex flex-col gap-3 pb-44 md:pb-28">
         {messages?.map((message) => {
           const isOwn = message.sender_id === session?.user.id;
           return (

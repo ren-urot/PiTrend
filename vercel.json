@@ -1,4 +1,14 @@
 {
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "crons": [{ "path": "/api/fetch-news", "schedule": "0 22 * * *" }]
+  "crons": [{ "path": "/api/fetch-news", "schedule": "0 22 * * *" }],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+    },
+    {
+      "source": "/registerSW.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+    }
+  ]
 }
